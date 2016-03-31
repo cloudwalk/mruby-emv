@@ -59,7 +59,10 @@ class Plataform
     PPCOMP_VCINVCURR     = 75
     PPCOMP_ERRFALLBACK   = 76
 
-    attr_reader :card, :message_notify
+    class << self
+      attr_accessor :init, :process, :tags, :optional_tags,
+      attr_reader :card, :message_notify, :process_info, :process_message_notify
+    end
   end
 end
 
