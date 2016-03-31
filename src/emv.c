@@ -3,9 +3,11 @@
 #include "mruby.h"
 #include "mruby/compile.h"
 #include "mruby/value.h"
+#include "mruby/variable.h"
 #include "mruby/array.h"
 #include "mruby/string.h"
 #include "mruby/hash.h"
+#include "avxpinpad/compartilhada.h"
 
 /*PP_InitLib();*/
 /*PP_SetDisplayFunc(&Display);*/
@@ -22,22 +24,22 @@
 /*ppRet = PP_RemoveCard(psMsgNotify);*/
 /*PP_Close("");*/
 
-static mrb_value
-mrb_emv_s_init(mrb_state *mrb, mrb_value klass)
-{
-  PP_InitLib();
-  return mrb_nil_value();
-}
+/*static mrb_value*/
+/*mrb_emv_s_init(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*PP_InitLib();*/
+  /*return mrb_nil_value();*/
+/*}*/
 
-static mrb_value
-mrb_emv_s_version(mrb_state *mrb, mrb_value klass)
-{
-  OUTPUT version;
+/*static mrb_value*/
+/*mrb_emv_s_version(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*OUTPUT version;*/
 
-  PP_GetLibVersion(version);
+  /*PP_GetLibVersion(version);*/
 
-  return mrb_str_new_cstr(mrb, version);
-}
+  /*return mrb_str_new_cstr(mrb, version);*/
+/*}*/
 
 static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
@@ -54,13 +56,7 @@ mrb_emv_s_close(mrb_state *mrb, mrb_value klass)
   mrb_value msg;
   mrb_get_args(mrb, "S", &msg);
 
-  return mrb_fixnum_value(PP_Close(RSTRING_PTR(com)));
-}
-
-static mrb_value
-mrb_emv_s_abort(mrb_state *mrb, mrb_value klass)
-{
-  return mrb_fixnum_value(PP_Abort());
+  return mrb_fixnum_value(PP_Close(RSTRING_PTR(msg)));
 }
 
 static mrb_value
@@ -90,7 +86,7 @@ mrb_emv_table_s_rec(mrb_state *mrb, mrb_value klass)
 static mrb_value
 mrb_emv_table_s_end(mrb_state *mrb, mrb_value klass)
 {
-  return mrb_fixnum_value(PP_TableLoadEnd(RSTRING_PTR(table)));
+  return mrb_fixnum_value(PP_TableLoadEnd());
 }
 
 static mrb_value
@@ -105,9 +101,9 @@ mrb_emv_table_s_change(mrb_state *mrb, mrb_value klass)
 static mrb_value
 mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 {
-  mrb_value init;
-  init = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@init"));
-  return mrb_fixnum_value(PP_StartGetCard(RSTRING_PTR(init)));
+  mrb_value value;
+  value = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@init"));
+  return mrb_fixnum_value(PP_StartGetCard(RSTRING_PTR(value)));
 }
 
 static mrb_value
@@ -115,6 +111,7 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
   OUTPUT output, msg;
+
   ret = PP_GetCard(output, msg);
 
   mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@init_info"),
@@ -125,11 +122,11 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   return mrb_fixnum_value(ret);
 }
 
-static mrb_value
-mrb_emv_s_resume_get_card(mrb_state *mrb, mrb_value klass)
-{
-  return mrb_fixnum_value(PP_ResumeGetCard());
-}
+/*static mrb_value*/
+/*mrb_emv_s_resume_get_card(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*return mrb_fixnum_value(PP_ResumeGetCard());*/
+/*}*/
 
 static mrb_value
 mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
@@ -141,7 +138,7 @@ mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
   optional_tags = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@optional_tags"));
 
   return mrb_fixnum_value(PP_StartGoOnChip(RSTRING_PTR(process),
-        RSTRING_PTR(input), RSTRING_PTR(input)));
+        RSTRING_PTR(tags), RSTRING_PTR(optional_tags)));
 }
 
 static mrb_value
@@ -197,6 +194,7 @@ mrb_pinpad_s_get_info(mrb_state *mrb, mrb_value klass)
 static mrb_value
 mrb_pinpad_s_working_key_m(mrb_state *mrb, mrb_value klass)
 {
+  mrb_int ret;
   OUTPUT output;
   mrb_value input;
 
@@ -218,14 +216,14 @@ mrb_pinpad_s_display(mrb_state *mrb, mrb_value klass)
   return mrb_fixnum_value(PP_Display(RSTRING_PTR(msg)));
 }
 
-static mrb_value
-mrb_pinpad_s_display_ex(mrb_state *mrb, mrb_value klass)
-{
-  mrb_value msg;
-  mrb_get_args(mrb, "S", &msg);
+/*static mrb_value*/
+/*mrb_pinpad_s_display_ex(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*mrb_value msg;*/
+  /*mrb_get_args(mrb, "S", &msg);*/
 
-  return mrb_fixnum_value(PP_DisplayEx(RSTRING_PTR(msg)));
-}
+  /*return mrb_fixnum_value(PP_DisplayEx(RSTRING_PTR(msg)));*/
+/*}*/
 
 static mrb_value
 mrb_pinpad_s_start_get_key(mrb_state *mrb, mrb_value klass)
@@ -264,31 +262,31 @@ mrb_pinpad_s_get_pin(mrb_state *mrb, mrb_value klass)
   return mrb_fixnum_value(ret);
 }
 
-static mrb_value
-mrb_pinpad_s_start_check_event(mrb_state *mrb, mrb_value klass)
-{
-  mrb_int ret;
-  mrb_value input;
-  mrb_get_args(mrb, "S", &input);
+/*static mrb_value*/
+/*mrb_pinpad_s_start_check_event(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*mrb_int ret;*/
+  /*mrb_value input;*/
+  /*mrb_get_args(mrb, "S", &input);*/
 
-  ret = PP_StartCheckEvent(RSTRING_PTR(input));
+  /*ret = PP_StartCheckEvent(RSTRING_PTR(input));*/
 
-  return mrb_fixnum_value(ret);
-}
+  /*return mrb_fixnum_value(ret);*/
+/*}*/
 
-static mrb_value
-mrb_pinpad_s_check_event(mrb_state *mrb, mrb_value klass)
-{
-  mrb_int ret;
-  OUTPUT output;
+/*static mrb_value*/
+/*mrb_pinpad_s_check_event(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*mrb_int ret;*/
+  /*OUTPUT output;*/
 
-  ret = PP_CheckEvent(output);
+  /*ret = PP_CheckEvent(output);*/
 
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@event_info"),
-      mrb_str_new_cstr(mrb, output));
+  /*mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@event_info"),*/
+      /*mrb_str_new_cstr(mrb, output));*/
 
-  return mrb_fixnum_value(ret);
-}
+  /*return mrb_fixnum_value(ret);*/
+/*}*/
 
 static mrb_value
 mrb_pinpad_s_encrypt_buffer(mrb_state *mrb, mrb_value klass)
@@ -348,14 +346,14 @@ mrb_pinpad_s_chip_direct(mrb_state *mrb, mrb_value klass)
   return mrb_fixnum_value(ret);
 }
 
-static mrb_value
-mrb_pinpad_s_start_remove_card(mrb_state *mrb, mrb_value klass)
-{
-  mrb_value input;
-  mrb_get_args(mrb, "S", &input);
+/*static mrb_value*/
+/*mrb_pinpad_s_start_remove_card(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*mrb_value input;*/
+  /*mrb_get_args(mrb, "S", &input);*/
 
-  return mrb_fixnum_value(PP_StartRemoveCard(RSTRING_PTR(input)));
-}
+  /*return mrb_fixnum_value(PP_StartRemoveCard(RSTRING_PTR(input)));*/
+/*}*/
 
 static mrb_value
 mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
@@ -370,30 +368,30 @@ mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
   return mrb_fixnum_value(ret);
 }
 
-static mrb_value
-mrb_pinpad_s_start_generic_command(mrb_state *mrb, mrb_value klass)
-{
-  mrb_value input;
-  mrb_get_args(mrb, "S", &input);
+/*static mrb_value*/
+/*mrb_pinpad_s_start_generic_command(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*mrb_value input;*/
+  /*mrb_get_args(mrb, "S", &input);*/
 
-  return mrb_fixnum_value(PP_StartGenericCmd(RSTRING_PTR(input)));
-}
+  /*return mrb_fixnum_value(PP_StartGenericCmd(RSTRING_PTR(input)));*/
+/*}*/
 
-static mrb_value
-mrb_pinpad_s_generic_command(mrb_state *mrb, mrb_value klass)
-{
-  mrb_int ret;
-  OUTPUT output, msg;
+/*static mrb_value*/
+/*mrb_pinpad_s_generic_command(mrb_state *mrb, mrb_value klass)*/
+/*{*/
+  /*mrb_int ret;*/
+  /*OUTPUT output, msg;*/
 
-  ret = PP_GenericCmd(output, msg);
+  /*ret = PP_GenericCmd(output, msg);*/
 
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@cmd_info"),
-      mrb_str_new_cstr(mrb, output));
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@cmd_message_notify"),
-      mrb_str_new_cstr(mrb, msg));
+  /*mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@cmd_info"),*/
+      /*mrb_str_new_cstr(mrb, output));*/
+  /*mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@cmd_message_notify"),*/
+      /*mrb_str_new_cstr(mrb, msg));*/
 
-  return mrb_fixnum_value(ret);
-}
+  /*return mrb_fixnum_value(ret);*/
+/*}*/
 
 void
 mrb_emv_init(mrb_state* mrb)
@@ -406,8 +404,8 @@ mrb_emv_init(mrb_state* mrb)
   pinpad = mrb_define_class_under(mrb, pinpad, "Pinpad",  mrb->object_class);
 
   /*Required*/
-  mrb_define_class_method(mrb , emv , "init"    , mrb_emv_s_init    , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , emv , "version" , mrb_emv_s_version , MRB_ARGS_NONE());
+  /*mrb_define_class_method(mrb , emv , "init"    , mrb_emv_s_init    , MRB_ARGS_NONE());*/
+  /*mrb_define_class_method(mrb , emv , "version" , mrb_emv_s_version , MRB_ARGS_NONE());*/
 
   /*void PPEXP PP_SetDebugFunc (void (CALLBACK * pfDebugFunc) (char cData));*/
   /*void PPEXP PP_SetDisplayFunc (void (CALLBACK * pfDispFunc)(int iRow, int iCol, PPCOMP_COMMANDS eCommand, char cReverse, char * pszMsg));*/
@@ -432,7 +430,7 @@ mrb_emv_init(mrb_state* mrb)
   /*SmartCard Process*/
   mrb_define_class_method(mrb , emv , "start_get_card"   , mrb_emv_s_start_get_card   , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , emv , "get_card"         , mrb_emv_s_get_card         , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , emv , "resume_get_card"  , mrb_emv_s_resume_get_card  , MRB_ARGS_NONE());
+  /*mrb_define_class_method(mrb , emv , "resume_get_card"  , mrb_emv_s_resume_get_card  , MRB_ARGS_NONE());*/
   mrb_define_class_method(mrb , emv , "start_go_on_chip" , mrb_emv_s_start_go_on_chip , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , emv , "go_on_chip"       , mrb_emv_s_go_on_chip       , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , emv , "finish_chip"      , mrb_emv_s_finish_chip      , MRB_ARGS_NONE());
@@ -441,21 +439,21 @@ mrb_emv_init(mrb_state* mrb)
   mrb_define_class_method(mrb , pinpad , "get_info"              , mrb_pinpad_s_get_info              , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "working_key="          , mrb_pinpad_s_working_key_m         , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "display"               , mrb_pinpad_s_display               , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , pinpad , "display_ex"            , mrb_pinpad_s_display_ex            , MRB_ARGS_REQ(1));
+  /*mrb_define_class_method(mrb , pinpad , "display_ex"            , mrb_pinpad_s_display_ex            , MRB_ARGS_REQ(1));*/
   mrb_define_class_method(mrb , pinpad , "start_get_key"         , mrb_pinpad_s_start_get_key         , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , pinpad , "get_key"               , mrb_pinpad_s_get_key               , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , pinpad , "start_get_pin"         , mrb_pinpad_s_start_get_pin         , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "get_pin"               , mrb_pinpad_s_get_pin               , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , pinpad , "start_check_event"     , mrb_pinpad_s_start_check_event     , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , pinpad , "check_event"           , mrb_pinpad_s_check_event           , MRB_ARGS_REQ(1));
+  /*mrb_define_class_method(mrb , pinpad , "start_check_event"     , mrb_pinpad_s_start_check_event     , MRB_ARGS_REQ(1));*/
+  /*mrb_define_class_method(mrb , pinpad , "check_event"           , mrb_pinpad_s_check_event           , MRB_ARGS_REQ(1));*/
   mrb_define_class_method(mrb , pinpad , "encrypt_buffer"        , mrb_pinpad_s_encrypt_buffer        , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "get_dukpt"             , mrb_pinpad_s_get_dukpt             , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "start_chip_direct"     , mrb_pinpad_s_start_chip_direct     , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "chip_direct"           , mrb_pinpad_s_chip_direct           , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , pinpad , "start_remove_card"     , mrb_pinpad_s_start_remove_card     , MRB_ARGS_REQ(1));
+  /*mrb_define_class_method(mrb , pinpad , "start_remove_card"     , mrb_pinpad_s_start_remove_card     , MRB_ARGS_REQ(1));*/
   mrb_define_class_method(mrb , pinpad , "remove_card"           , mrb_pinpad_s_remove_card           , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , pinpad , "start_generic_command" , mrb_pinpad_s_start_generic_command , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , pinpad , "generic_command"       , mrb_pinpad_s_generic_command       , MRB_ARGS_NONE());
+  /*mrb_define_class_method(mrb , pinpad , "start_generic_command" , mrb_pinpad_s_start_generic_command , MRB_ARGS_REQ(1));*/
+  /*mrb_define_class_method(mrb , pinpad , "generic_command"       , mrb_pinpad_s_generic_command       , MRB_ARGS_NONE());*/
   /*mrb_define_class_method(mrb , pinpad , "check_event_v108"      , mrb_pinpad_s_check_event_v108      , MRB_ARGS_REQ(1));*/
   /*int PPEXP PP_StartCheckEventV108 (INPUT psInput);*/
 }

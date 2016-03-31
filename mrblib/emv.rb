@@ -60,7 +60,7 @@ class Plataform
     PPCOMP_ERRFALLBACK   = 76
 
     class << self
-      attr_accessor :init, :process, :tags, :optional_tags,
+      attr_accessor :init, :process, :tags, :optional_tags
       attr_reader :card, :message_notify, :process_info, :process_message_notify
     end
   end
