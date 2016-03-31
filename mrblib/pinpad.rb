@@ -1,5 +1,8 @@
 class Platform
   class Pinpad
+    class << self
+      attr_reader :info
+    end
     LOADKEY_DES         = 0
     LOADKEY_3DES        = 1
 
