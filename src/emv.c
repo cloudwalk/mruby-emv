@@ -421,7 +421,7 @@ mrb_emv_init(mrb_state* mrb)
   /*Table*/
   mrb_define_class_method(mrb , table , "init"   , mrb_emv_table_s_init   , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , table , "rec"    , mrb_emv_table_s_rec    , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , table , "end"    , mrb_emv_table_s_end    , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , table , "fin"    , mrb_emv_table_s_fin    , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , table , "change" , mrb_emv_table_s_change , MRB_ARGS_REQ(1));
 
   /*TODO Scalone to define*/
