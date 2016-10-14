@@ -84,7 +84,7 @@ mrb_emv_table_s_rec(mrb_state *mrb, mrb_value klass)
 }
 
 static mrb_value
-mrb_emv_table_s_end(mrb_state *mrb, mrb_value klass)
+mrb_emv_table_s_fin(mrb_state *mrb, mrb_value klass)
 {
   return mrb_fixnum_value(PP_TableLoadEnd());
 }
@@ -400,7 +400,7 @@ mrb_emv_init(mrb_state* mrb)
 
   plt    = mrb_class_get(mrb, "Platform");
   emv    = mrb_define_class_under(mrb, plt, "EMV",  mrb->object_class);
-  table  = mrb_define_class_under(mrb, plt, "EMVTable",  mrb->object_class);
+  table  = mrb_define_class_under(mrb, emv, "Table",  mrb->object_class);
   pinpad = mrb_define_class_under(mrb, pinpad, "Pinpad",  mrb->object_class);
 
   /*Required*/
