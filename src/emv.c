@@ -7,7 +7,7 @@
 #include "mruby/array.h"
 #include "mruby/string.h"
 #include "mruby/hash.h"
-#include "avxpinpad/compartilhada.h"
+#include "ppcomp.h"
 
 /*PP_InitLib();*/
 /*PP_SetDisplayFunc(&Display);*/
