@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "mruby.h"
 #include "mruby/compile.h"
 #include "mruby/value.h"
@@ -401,7 +402,7 @@ mrb_emv_init(mrb_state* mrb)
   plt    = mrb_class_get(mrb, "Platform");
   emv    = mrb_define_class_under(mrb, plt, "EMV",  mrb->object_class);
   table  = mrb_define_class_under(mrb, emv, "Table",  mrb->object_class);
-  pinpad = mrb_define_class_under(mrb, pinpad, "Pinpad",  mrb->object_class);
+  pinpad = mrb_define_class_under(mrb, emv, "Pinpad",  mrb->object_class);
 
   /*Required*/
   /*mrb_define_class_method(mrb , emv , "init"    , mrb_emv_s_init    , MRB_ARGS_NONE());*/
