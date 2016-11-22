@@ -25,12 +25,12 @@
 /*ppRet = PP_RemoveCard(psMsgNotify);*/
 /*PP_Close("");*/
 
-/*static mrb_value*/
-/*mrb_emv_s_init(mrb_state *mrb, mrb_value klass)*/
-/*{*/
-  /*PP_InitLib();*/
-  /*return mrb_nil_value();*/
-/*}*/
+static mrb_value
+mrb_emv_s_init(mrb_state *mrb, mrb_value klass)
+{
+  PP_InitLib();
+  return mrb_nil_value();
+}
 
 /*static mrb_value*/
 /*mrb_emv_s_version(mrb_state *mrb, mrb_value klass)*/
@@ -103,40 +103,34 @@ static mrb_value
 mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_value value;
-  value = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@init"));
+  mrb_get_args(mrb, "S", &value);
+
   return mrb_fixnum_value(PP_StartGetCard(RSTRING_PTR(value)));
 }
 
 static mrb_value
 mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
 {
-  mrb_int ret;
   OUTPUT output, msg;
+  mrb_value array;
+  mrb_int ret;
 
   ret = PP_GetCard(output, msg);
 
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@init_info"),
-      mrb_str_new_cstr(mrb, output));
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@init_message_notify"),
-      mrb_str_new_cstr(mrb, msg));
+  array  = mrb_ary_new(mrb);
+  mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(msg));
 
-  return mrb_fixnum_value(ret);
+  return array;
 }
-
-/*static mrb_value*/
-/*mrb_emv_s_resume_get_card(mrb_state *mrb, mrb_value klass)*/
-/*{*/
-  /*return mrb_fixnum_value(PP_ResumeGetCard());*/
-/*}*/
 
 static mrb_value
 mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
 {
   mrb_value process, tags, optional_tags;
 
-  process       = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@process"));
-  tags          = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@tags"));
-  optional_tags = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@optional_tags"));
+  mrb_get_args(mrb, "SSS", &process, &tags, &optional_tags);
 
   return mrb_fixnum_value(PP_StartGoOnChip(RSTRING_PTR(process),
         RSTRING_PTR(tags), RSTRING_PTR(optional_tags)));
@@ -146,34 +140,35 @@ static mrb_value
 mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
 {
   OUTPUT output, msg;
+  mrb_value array;
   mrb_int ret;
 
   ret = PP_GoOnChip(output, msg);
 
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@process_info"),
-      mrb_str_new_cstr(mrb, output));
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@process_message_notify"),
-      mrb_str_new_cstr(mrb, msg));
+  array  = mrb_ary_new(mrb);
+  mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(msg));
 
-  return mrb_fixnum_value(ret);
+  return array;
 }
 
 static mrb_value
 mrb_emv_s_finish_chip(mrb_state *mrb, mrb_value klass)
 {
+  mrb_value array, tags;
+  OUTPUT output;
   mrb_int ret;
-  OUTPUT result;
-  mrb_value finish, tags;
 
-  finish = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@finish"));
-  tags   = mrb_cv_get(mrb, klass, mrb_intern_lit(mrb, "@finish_tags"));
+  mrb_get_args(mrb, "SS", &finish, &tags);
 
-  ret = PP_FinishChip(RSTRING_PTR(finish), RSTRING_PTR(tags), result);
+  ret = PP_FinishChip(RSTRING_PTR(finish), RSTRING_PTR(tags), output);
 
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@finish_info"),
-      mrb_str_new_cstr(mrb, result));
+  array = mrb_ary_new(mrb);
+  mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
+  mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
 
-  return mrb_fixnum_value(ret);
+  return array;
 }
 
 static mrb_value
@@ -347,26 +342,29 @@ mrb_pinpad_s_chip_direct(mrb_state *mrb, mrb_value klass)
   return mrb_fixnum_value(ret);
 }
 
-/*static mrb_value*/
-/*mrb_pinpad_s_start_remove_card(mrb_state *mrb, mrb_value klass)*/
-/*{*/
-  /*mrb_value input;*/
-  /*mrb_get_args(mrb, "S", &input);*/
+static mrb_value
+mrb_pinpad_s_start_remove_card(mrb_state *mrb, mrb_value klass)
+{
+  mrb_value input;
+  mrb_get_args(mrb, "S", &input);
 
-  /*return mrb_fixnum_value(PP_StartRemoveCard(RSTRING_PTR(input)));*/
-/*}*/
+  return mrb_fixnum_value(PP_StartRemoveCard(RSTRING_PTR(input)));
+}
 
 static mrb_value
 mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
   OUTPUT output;
+  mrb_value array;
 
   ret = PP_RemoveCard(output);
-  mrb_cv_set(mrb, klass, mrb_intern_lit(mrb, "@remove_info"),
-      mrb_str_new_cstr(mrb, output));
 
-  return mrb_fixnum_value(ret);
+  array = mrb_ary_new(mrb);
+  mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
+  mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+
+  return array;
 }
 
 /*static mrb_value*/
@@ -405,7 +403,7 @@ mrb_emv_init(mrb_state* mrb)
   pinpad = mrb_define_class_under(mrb, emv, "Pinpad",  mrb->object_class);
 
   /*Required*/
-  /*mrb_define_class_method(mrb , emv , "init"    , mrb_emv_s_init    , MRB_ARGS_NONE());*/
+  mrb_define_class_method(mrb , emv , "init"    , mrb_emv_s_init    , MRB_ARGS_NONE());
   /*mrb_define_class_method(mrb , emv , "version" , mrb_emv_s_version , MRB_ARGS_NONE());*/
 
   /*void PPEXP PP_SetDebugFunc (void (CALLBACK * pfDebugFunc) (char cData));*/
@@ -429,12 +427,14 @@ mrb_emv_init(mrb_state* mrb)
   /*int PPEXP PP_GetTimeStamp (INPUT psInput, OUTPUT psOutput);*/
 
   /*SmartCard Process*/
-  mrb_define_class_method(mrb , emv , "start_get_card"   , mrb_emv_s_start_get_card   , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , emv , "get_card"         , mrb_emv_s_get_card         , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "start_get_card"    , mrb_emv_s_start_get_card   , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "get_card"          , mrb_emv_s_get_card         , MRB_ARGS_NONE());
   /*mrb_define_class_method(mrb , emv , "resume_get_card"  , mrb_emv_s_resume_get_card  , MRB_ARGS_NONE());*/
-  mrb_define_class_method(mrb , emv , "start_go_on_chip" , mrb_emv_s_start_go_on_chip , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , emv , "go_on_chip"       , mrb_emv_s_go_on_chip       , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , emv , "finish_chip"      , mrb_emv_s_finish_chip      , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "start_go_on_chip"  , mrb_emv_s_start_go_on_chip , MRB_ARGS_REQ(3));
+  mrb_define_class_method(mrb , emv , "go_on_chip"        , mrb_emv_s_go_on_chip       , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "finish_chip"       , mrb_emv_s_finish_chip      , MRB_ARGS_REQ(2));
+  mrb_define_class_method(mrb , emv , "start_remove_card" , mrb_pinpad_s_start_remove_card     , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "remove_card"       , mrb_pinpad_s_remove_card           , MRB_ARGS_NONE());
 
   /*Pinpad*/
   mrb_define_class_method(mrb , pinpad , "get_info"              , mrb_pinpad_s_get_info              , MRB_ARGS_REQ(1));
@@ -451,8 +451,7 @@ mrb_emv_init(mrb_state* mrb)
   mrb_define_class_method(mrb , pinpad , "get_dukpt"             , mrb_pinpad_s_get_dukpt             , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "start_chip_direct"     , mrb_pinpad_s_start_chip_direct     , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "chip_direct"           , mrb_pinpad_s_chip_direct           , MRB_ARGS_NONE());
-  /*mrb_define_class_method(mrb , pinpad , "start_remove_card"     , mrb_pinpad_s_start_remove_card     , MRB_ARGS_REQ(1));*/
-  mrb_define_class_method(mrb , pinpad , "remove_card"           , mrb_pinpad_s_remove_card           , MRB_ARGS_NONE());
+
   /*mrb_define_class_method(mrb , pinpad , "start_generic_command" , mrb_pinpad_s_start_generic_command , MRB_ARGS_REQ(1));*/
   /*mrb_define_class_method(mrb , pinpad , "generic_command"       , mrb_pinpad_s_generic_command       , MRB_ARGS_NONE());*/
   /*mrb_define_class_method(mrb , pinpad , "check_event_v108"      , mrb_pinpad_s_check_event_v108      , MRB_ARGS_REQ(1));*/
