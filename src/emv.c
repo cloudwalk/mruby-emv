@@ -12,25 +12,6 @@
 #include "ppcomp.h"
 
 static mrb_value
-mrb_emv_s_init(mrb_state *mrb, mrb_value klass)
-{
-  PP_InitLib();
-  return mrb_nil_value();
-}
-
-/*
- *static mrb_value
- *mrb_emv_s_version(mrb_state *mrb, mrb_value klass)
- *{
- *  OUTPUT version;
- *
- *  PP_GetLibVersion(version);
- *
- *  return mrb_str_new_cstr(mrb, version);
- *}
- */
-
-static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 {
   mrb_value com;
@@ -164,10 +145,6 @@ mrb_emv_init(mrb_state* mrb)
 
   plt = mrb_class_get(mrb, "Platform");
   emv = mrb_define_class_under(mrb, plt, "EMV",  mrb->object_class);
-
-  /*Required*/
-  mrb_define_class_method(mrb , emv , "init"    , mrb_emv_s_init    , MRB_ARGS_NONE());
-  /*mrb_define_class_method(mrb , emv , "version" , mrb_emv_s_version , MRB_ARGS_NONE());*/
 
   /*Control*/
   mrb_define_class_method(mrb , emv , "open"  , mrb_emv_s_open  , MRB_ARGS_REQ(1));
