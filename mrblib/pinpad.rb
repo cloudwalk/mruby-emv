@@ -18,5 +18,8 @@ class Platform
     def self.dukpt_default
       DUKPT_DEFAULT.dup
     end
+
+    def self.smartcard_detect?
+    end
   end
 end
