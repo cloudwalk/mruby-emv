@@ -24,7 +24,7 @@ mrb_pinpad_s_info(mrb_state *mrb, mrb_value klass)
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
@@ -42,7 +42,7 @@ mrb_pinpad_s_set_working_key(mrb_state *mrb, mrb_value klass)
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
@@ -89,10 +89,10 @@ mrb_pinpad_s_get_pin(mrb_state *mrb, mrb_value klass)
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
   if (ret == PPCOMP_OK)
-    mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+    mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
   else
     mrb_ary_push(mrb, array, mrb_nil_value());
-  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(msg));
+  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, msg));
 
   return array;
 }
@@ -121,7 +121,7 @@ mrb_pinpad_s_check_event(mrb_state *mrb, mrb_value klass)
 
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
@@ -139,7 +139,7 @@ mrb_pinpad_s_encrypt_buffer(mrb_state *mrb, mrb_value klass)
 
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
@@ -157,7 +157,7 @@ mrb_pinpad_s_get_dukpt(mrb_state *mrb, mrb_value klass)
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return mrb_fixnum_value(ret);
 }
@@ -183,7 +183,7 @@ mrb_pinpad_s_chip_direct(mrb_state *mrb, mrb_value klass)
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
@@ -209,10 +209,10 @@ mrb_pinpad_s_generic_command(mrb_state *mrb, mrb_value klass)
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
   if (ret == PPCOMP_OK)
-    mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+    mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
   else
     mrb_ary_push(mrb, array, mrb_nil_value());
-  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(msg));
+  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, msg));
 
   return array;
 }

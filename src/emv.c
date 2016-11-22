@@ -56,10 +56,10 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
   if (ret == PPCOMP_OK)
-    mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+    mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
   else
     mrb_ary_push(mrb, array, mrb_nil_value());
-  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(msg));
+  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, msg));
 
   return array;
 }
@@ -87,10 +87,10 @@ mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
   if (ret == PPCOMP_OK)
-    mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+    mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
   else
     mrb_ary_push(mrb, array, mrb_nil_value());
-  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(msg));
+  if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, msg));
 
   return array;
 }
@@ -98,7 +98,7 @@ mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
 static mrb_value
 mrb_emv_s_finish_chip(mrb_state *mrb, mrb_value klass)
 {
-  mrb_value array, tags;
+  mrb_value array, finish, tags;
   OUTPUT output;
   mrb_int ret;
 
@@ -108,7 +108,7 @@ mrb_emv_s_finish_chip(mrb_state *mrb, mrb_value klass)
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
@@ -133,7 +133,7 @@ mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  mrb_ary_push(mrb, array, mrb_str_new_cstr(output));
+  mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
