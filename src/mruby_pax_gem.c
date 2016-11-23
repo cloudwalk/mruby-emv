@@ -13,14 +13,14 @@
 
 void mrb_emv_init(mrb_state* mrb);
 void mrb_pinpad_init(mrb_state* mrb);
-void mrb_emv_table_init(mrb_state* mrb);
+void mrb_table_init(mrb_state* mrb);
 
 void
 mrb_mruby_emv_gem_init(mrb_state* mrb)
 {
   mrb_emv_init(mrb); DONE;
   mrb_pinpad_init(mrb); DONE;
-  mrb_emv_table_init(mrb); DONE;
+  mrb_table_init(mrb); DONE;
 }
 
 void
