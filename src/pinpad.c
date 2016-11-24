@@ -24,7 +24,7 @@ mrb_pinpad_s_info(mrb_state *mrb, mrb_value klass)
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
-  mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
 
   return array;
 }
