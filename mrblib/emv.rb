@@ -1,4 +1,4 @@
-class Plataform
+class Platform
   class EMV
     PPCOMP_OK            = 0
     PPCOMP_PROCESSING    = 1
@@ -60,8 +60,19 @@ class Plataform
     PPCOMP_ERRFALLBACK   = 76
 
     class << self
-      attr_accessor :init, :process, :tags, :optional_tags
-      attr_reader :card, :message_notify, :process_info, :process_message_notify
+      attr_reader :version
+    end
+
+    def self.version
+      self.init unless @version
+      @version || "0.0.0"
+    end
+
+    def self.init(port = "01")
+      Platform::EMV.open(port)
+      Platform::EMV::Pinpad.init
+      @version = Platform::EMV::Pinpad.firmaware_version.to_s
+      true
     end
   end
 end
