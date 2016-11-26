@@ -147,18 +147,18 @@ mrb_emv_init(mrb_state* mrb)
   emv = mrb_define_class_under(mrb, plt, "EMV",  mrb->object_class);
 
   /*Control*/
-  mrb_define_class_method(mrb , emv , "open"  , mrb_emv_s_open  , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , emv , "close" , mrb_emv_s_close , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , emv , "abort" , mrb_emv_s_abort , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "open"      , mrb_emv_s_open      , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "close"     , mrb_emv_s_close     , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "abort"     , mrb_emv_s_abort     , MRB_ARGS_NONE());
 
   /*EMV manipulation*/
-  mrb_define_class_method(mrb , emv , "start_get_card"    , mrb_emv_s_start_get_card   , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , emv , "get_card"          , mrb_emv_s_get_card         , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , emv , "start_go_on_chip"  , mrb_emv_s_start_go_on_chip , MRB_ARGS_REQ(3));
-  mrb_define_class_method(mrb , emv , "go_on_chip"        , mrb_emv_s_go_on_chip       , MRB_ARGS_NONE());
-  mrb_define_class_method(mrb , emv , "finish_chip"       , mrb_emv_s_finish_chip      , MRB_ARGS_REQ(2));
-  mrb_define_class_method(mrb , emv , "start_remove_card" , mrb_pinpad_s_start_remove_card     , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , emv , "remove_card"       , mrb_pinpad_s_remove_card           , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "start_get_card"    , mrb_emv_s_start_get_card       , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "get_card"          , mrb_emv_s_get_card             , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "start_go_on_chip"  , mrb_emv_s_start_go_on_chip     , MRB_ARGS_REQ(3));
+  mrb_define_class_method(mrb , emv , "go_on_chip"        , mrb_emv_s_go_on_chip           , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "finish_chip"       , mrb_emv_s_finish_chip          , MRB_ARGS_REQ(2));
+  mrb_define_class_method(mrb , emv , "start_remove_card" , mrb_pinpad_s_start_remove_card , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "remove_card"       , mrb_pinpad_s_remove_card       , MRB_ARGS_NONE());
 
   /*
    *Debugs
