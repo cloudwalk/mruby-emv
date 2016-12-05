@@ -15,7 +15,10 @@ static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 {
   mrb_value com;
+
   mrb_get_args(mrb, "S", &com);
+
+  PP_InitLib();
 
   return mrb_fixnum_value(PP_Open(RSTRING_PTR(com)));
 }
