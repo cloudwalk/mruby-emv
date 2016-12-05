@@ -39,6 +39,9 @@ static mrb_value
 mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_value value;
+  OUTPUT out[11]={0x00};
+  mrb_int ret;
+
   mrb_get_args(mrb, "S", &value);
 
   return mrb_fixnum_value(PP_StartGetCard(RSTRING_PTR(value)));
@@ -47,7 +50,7 @@ mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 static mrb_value
 mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
 {
-  OUTPUT output, msg;
+  OUTPUT output[1024]={0x00}, msg[33]={0x00};
   mrb_value array;
   mrb_int ret;
 
@@ -78,7 +81,7 @@ mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
 static mrb_value
 mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
 {
-  OUTPUT output, msg;
+  OUTPUT output[1024]={0x00}, msg[33]={0x00};
   mrb_value array;
   mrb_int ret;
 
@@ -99,7 +102,7 @@ static mrb_value
 mrb_emv_s_finish_chip(mrb_state *mrb, mrb_value klass)
 {
   mrb_value array, finish, tags;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_int ret;
 
   mrb_get_args(mrb, "SS", &finish, &tags);
@@ -126,7 +129,7 @@ static mrb_value
 mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_value array;
 
   ret = PP_RemoveCard(output);

@@ -15,7 +15,7 @@ static mrb_value
 mrb_pinpad_s_info(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_value input, array;
 
   mrb_get_args(mrb, "S", &input);
@@ -33,7 +33,7 @@ static mrb_value
 mrb_pinpad_s_set_working_key(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_value input, array;
 
   mrb_get_args(mrb, "S", &input);
@@ -81,7 +81,7 @@ static mrb_value
 mrb_pinpad_s_get_pin(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output, msg;
+  OUTPUT output[1024]={0x00}, msg[33]={0x00};
   mrb_value array;
 
   ret = PP_GetPIN(output, msg);
@@ -114,7 +114,7 @@ static mrb_value
 mrb_pinpad_s_check_event(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_value array;
 
   ret = PP_CheckEvent(output);
@@ -130,7 +130,7 @@ static mrb_value
 mrb_pinpad_s_encrypt_buffer(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_value input, array;
 
   mrb_get_args(mrb, "S", &input);
@@ -148,7 +148,7 @@ static mrb_value
 mrb_pinpad_s_get_dukpt(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_value input, array;
 
   mrb_get_args(mrb, "S", &input);
@@ -176,7 +176,7 @@ static mrb_value
 mrb_pinpad_s_chip_direct(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output;
+  OUTPUT output[1024]={0x00};
   mrb_value array;
 
   ret = PP_ChipDirect(output);
@@ -201,7 +201,7 @@ static mrb_value
 mrb_pinpad_s_generic_command(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output, msg;
+  OUTPUT output[1024]={0x00}, msg[33]={0x00};
   mrb_value array;
 
   ret = PP_GenericCmd(output, msg);
