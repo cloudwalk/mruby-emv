@@ -144,6 +144,18 @@ mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
   return array;
 }
 
+static mrb_value
+mrb_emv_s_timestamp(mrb_state *mrb, mrb_value klass)
+{
+  OUTPUT out[11];
+  mrb_value acquirer;
+  mrb_get_args(mrb, "S", &acquirer);
+
+  PP_GetTimeStamp(RSTRING_PTR(acquirer), out);
+
+  return mrb_str_new_cstr(mrb, out);
+}
+
 void
 mrb_emv_init(mrb_state* mrb)
 {
@@ -165,6 +177,7 @@ mrb_emv_init(mrb_state* mrb)
   mrb_define_class_method(mrb , emv , "finish_chip"       , mrb_emv_s_finish_chip          , MRB_ARGS_REQ(2));
   mrb_define_class_method(mrb , emv , "start_remove_card" , mrb_pinpad_s_start_remove_card , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , emv , "remove_card"       , mrb_pinpad_s_remove_card       , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , emv , "timestamp"         , mrb_emv_s_timestamp            , MRB_ARGS_REQ(1));
 
   /*
    *Debugs
