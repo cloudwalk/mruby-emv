@@ -217,6 +217,34 @@ mrb_pinpad_s_generic_command(mrb_state *mrb, mrb_value klass)
   return array;
 }
 
+static mrb_value
+mrb_pinpad_s_key_test(mrb_state *mrb, mrb_value klass)
+{
+  mrb_int type, operation, index, ret;
+
+  mrb_get_args(mrb, "iii", &type, &operation, &index);
+
+  return mrb_fixnum_value(GEDI_KMS_KeyPresenceTest(type, operation, index));
+}
+
+static mrb_value
+mrb_pinpad_s_key_kcv(mrb_state *mrb, mrb_value klass)
+{
+  mrb_value array;
+  unsigned char kcv[3] = {0x00};
+  mrb_int type, operation, index, ret;
+
+  mrb_get_args(mrb, "iii", &type, &operation, &index);
+
+  ret = GEDI_KMS_KCVGet(type, operation, index, &kcv);
+
+  array = mrb_ary_new(mrb);
+  mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new(mrb, kcv, 4));
+
+  return array;
+}
+
 void
 mrb_pinpad_init(mrb_state* mrb)
 {
@@ -242,6 +270,8 @@ mrb_pinpad_init(mrb_state* mrb)
   mrb_define_class_method(mrb , pinpad , "chip_direct"           , mrb_pinpad_s_chip_direct           , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , pinpad , "start_generic_command" , mrb_pinpad_s_start_generic_command , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "generic_command"       , mrb_pinpad_s_generic_command       , MRB_ARGS_NONE());
+  mrb_define_class_method(mrb , pinpad , "key_test"              , mrb_pinpad_s_key_test              , MRB_ARGS_REQ(3));
+  mrb_define_class_method(mrb , pinpad , "key_kcv"               , mrb_pinpad_s_key_kcv               , MRB_ARGS_REQ(3));
 
   /*
    *TODO Scalone: Check if is necessary implmentation.
