@@ -73,113 +73,48 @@
 mrb_state *current_mrb;
 mrb_value current_klass;
 
-/*static char szTitle[32];*/
-
 void GDSP_Clear (void)
 {
-  GEDI_LCD_Clear();
-  /*mrb_value display;*/
-  /*struct RClass *device;*/
+  mrb_value display;
+  struct RClass *device;
 
-  /*device  = mrb_class_get(current_mrb, "Device");*/
-  /*display = mrb_const_get(current_mrb, mrb_obj_value(device), mrb_intern_lit(mrb, "Display"));*/
+  device  = mrb_class_get(current_mrb, "Device");
+  display = mrb_const_get(current_mrb, mrb_obj_value(device), mrb_intern_lit(current_mrb, "Display"));
 
-  /*mrb_funcall(current_mrb, display, "clear", 0);*/
+  mrb_funcall(current_mrb, display, "clear", 0);
 }
 
 int GDSP_iMenuStart (const char *pszTitle, unsigned long *pulFlags)
 {
   mrb_value ret;
-  /* Initialize */
-  strncpy(szTitle, pszTitle, 32);
 
-  /* Don't use hotkey */
-  *pulFlags = 0;
+  *pulFlags = DSP_F_BLOCK;
 
-  /*ret = mrb_funcall(current_mrb, current_klass, "internal_set_menu", 1,*/
-      /*mrb_str_new(current_mrb, pszTitle, 32));*/
+  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_title", 1,
+      mrb_str_new(current_mrb, pszTitle, 32));
 
-  /*return mrb_fixnum(ret);*/
-  return 4;
+  return mrb_fixnum(ret);
 }
 
-
-
-/**
- * See libdisplay.h
- */
-void GDSP_Text (unsigned long ulFlags, const char *pszTxt1, const char *pszTxt2)
-{
-  unsigned int w, h;
-  char* p;
-  char value[64];
-  int i = 1;
-
-  memset(value, 0, sizeof(value));
-  if(pszTxt1)
-  {
-    strcpy(value, pszTxt1);
-    GEDI_LCD_ResolutionGet(&w, &h);
-    GEDI_LCD_DrawRectangle(0, FONT_H * 0, w, FONT_H * 4, FALSE);
-
-    p = strtok(value, "\r\n");
-    while(p != NULL)
-    {
-      /* Quebra de linha */
-      do
-      {
-        GEDI_LCD_DrawString(0, FONT_H * i++, FONT_W, FONT_H, "%.16s", p);
-        p += (strlen(p) >= 16) ? 16 : strlen(p);
-      } while(*p);
-
-      p = strtok(NULL, "\r\n");
-    }
-  }
-
-  /* Txt 2 */
-  if(ulFlags & DSP_F_DATAENTRY)
-  {
-    printf("[DSP_Text] Data entry: %s\n", pszTxt2);
-    strcpy(value, pszTxt2);
-
-    p = strtok(value, "\r\n");
-    while(p != NULL)
-    {
-      /* Quebra de linha */
-      do
-      {
-        GEDI_LCD_DrawString(0, FONT_H * i++, FONT_W, FONT_H, "%.16s", p);
-        p += (strlen(p) >= 16) ? 16 : strlen(p);
-      } while(*p);
-      p = strtok(NULL, "\r\n");
-    }
-  }
-
-}
-
-/**
- *
- */
 int GDSP_iMenuShow (unsigned long ulFlags, const char *pszOpts, int iOptSel)
 {
-  int i = 0;
-  char value[32];
-  char* p;
+  mrb_value ret;
 
-  /* Titulo */
-  GEDI_LCD_DrawString(0, FONT_H * i++, FONT_W, FONT_H, szTitle);
+  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1,
+      mrb_str_new_cstr(current_mrb, pszOpts));
 
-  /* Copia valores para o menu */
-  strcpy(value, pszOpts);
-  p = strtok(value, "\r");
-  while(p != NULL)
-  {
-    if(iOptSel == (i - 1)) GEDI_LCD_DrawString(0, FONT_H * i++, FONT_W, FONT_H, "> %s", p);
-    else                   GEDI_LCD_DrawString(0, FONT_H * i++, FONT_W, FONT_H, "  %s", p);
-    p = strtok(NULL, "\r");
-  }
+  return mrb_fixnum(ret);
+}
 
-  return 0;
+void GDSP_Text (unsigned long ulFlags, const char *pszTxt1, const char *pszTxt2)
+{
+  mrb_value text1, text2;
+
+  text1 = (pszTxt1) ? mrb_str_new_cstr(current_mrb, pszTxt1) : mrb_nil_value();
+  text2 = (pszTxt2) ? mrb_str_new_cstr(current_mrb, pszTxt2) : mrb_nil_value();
+
+  mrb_funcall(current_mrb, current_klass, "internal_text_show", 3,
+      mrb_fixnum_value(ulFlags), text1, text2);
 }
 
   static mrb_value
@@ -190,12 +125,15 @@ mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 
   mrb_get_args(mrb, "S", &com);
 
+  current_mrb   = mrb;
+  current_klass = klass;
+
   PP_InitLib();
 
   dsp_st.pClear = &GDSP_Clear;
-  dsp_st.pText = &GDSP_Text;
-  dsp_st.piMenuShow = &GDSP_iMenuShow;
   dsp_st.piMenuStart = &GDSP_iMenuStart;
+  dsp_st.piMenuShow = &GDSP_iMenuShow;
+  dsp_st.pText = &GDSP_Text;
   /*Callbacks*/
   PP_DspCallbacks(&dsp_st);
 
@@ -266,6 +204,9 @@ mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
   OUTPUT output[1024]={0x00}, msg[33]={0x00};
   mrb_value array;
   mrb_int ret;
+
+  current_mrb   = mrb;
+  current_klass = klass;
 
   ret = PP_GoOnChip(output, msg);
 
