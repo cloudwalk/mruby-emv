@@ -142,11 +142,11 @@ class Platform::EMV
     else
       if ! text1.to_s.empty?
         Device::Display.clear
-        p "Text1 [#{text1.inspect}]"
+        #p "Text1 [#{text1.inspect}]"
         puts(*text1.split("\r")) if text1
 
         if (flags & DSP_F_DATAENTRY != 0)
-          p "Text2 [#{text2.inspect}]"
+          #p "Text2 [#{text2.inspect}]"
           puts(*text2.split("\r")) if text2
         end
       end
