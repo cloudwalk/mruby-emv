@@ -77,7 +77,7 @@ class Platform
           if response["return"] == EmvSharedLibrary::PPCOMP_OK
             response["ksn"] = buf[0..15]
             response["block"] = buf[16..35]
-            break 
+            break
           end
 
           #if getc(400) == Device::IO::CANCEL
@@ -102,7 +102,7 @@ class Platform
       private
       def input_pin(index, pan, amount)
         message =
-          "3" + 
+          "3" +
           rjust(index.to_s, "0", 2) +
           "00000000000000000000000000000000" +
           rjust(pan.size, "0", 2) +
