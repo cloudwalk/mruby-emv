@@ -142,6 +142,7 @@ class Platform::EMV
       self.text_show_block.call(opts)
     else
       if ! text1.to_s.empty?
+        return if text1[0..7] == "\rRETIRE\r"
         Device::Display.clear
         #p "Text1 [#{text1.inspect}]"
         puts(*text1.split("\r")) if text1
