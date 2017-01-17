@@ -4,6 +4,7 @@ class Platform
       class << self
         attr_reader :info
       end
+      RET_OK              = 0
       LOADKEY_DES         = 0
       LOADKEY_3DES        = 1
 
@@ -61,18 +62,25 @@ class Platform
         end
       end
 
-      def self.pin(index, pan)
+      def self.pin(options = {})
+        index   = options[:index] || 0
+        pan     = options[:pan]
+        message = options[:message]
+
         include DaFunk::Helper
         response = {}
 
         options = {delimiter: ".", precision: 2, separator: "," }
-        amount = number_to_currency(EmvTransaction.process_data.amount.to_i, options)
-        response["return"] = Device::EMV::Pinpad.start_get_pin(input_pin(index, pan, amount))
+        input = input_pin(index, pan, message)
+        response["return"] = Device::EMV::Pinpad.start_get_pin(input)
+
+        return response unless response["return"] == RET_OK
+
+        timeout = Time.now + EmvTransaction.timeout
+        response["return"] = EmvSharedLibrary::PPCOMP_PROCESSING
 
         while select_result(response["return"])
-          #p "PIN DUKPT"
           response["return"], buf, notification = Device::EMV::Pinpad.get_pin
-          #p "PIN DUKPT [#{response["return"]}][#{notification}]"
 
           if response["return"] == EmvSharedLibrary::PPCOMP_OK
             response["ksn"] = buf[0..15]
@@ -90,8 +98,8 @@ class Platform
             print(notification.to_s, 2, 4)
           end
 
-          if time < Time.now
-            ret = EmvSharedLibrary::PPCOMP_TIMEOUT
+          if timeout < Time.now
+            response["return"] = EmvSharedLibrary::PPCOMP_TIMEOUT
             Device::EMV.abort
           end
         end
@@ -100,17 +108,16 @@ class Platform
       end
 
       private
-      def input_pin(index, pan, amount)
-        message =
-          "3" +
-          rjust(index.to_s, "0", 2) +
+      def self.input_pin(index, pan, text)
+        "3" +
+          rjust(index.to_s, 2, "0") +
           "00000000000000000000000000000000" +
-          rjust(pan.size, "0", 2) +
-          rjust(pan, "0", 13).ljust(19, " ") +
+          rjust(pan.size.to_s, 2, "0") +
+          rjust(pan, 13, "0").ljust(19, " ") +
           "1" +
-          "0" +
+          "04" +
           "12" +
-          I18n.pt(:emv_enter_pin, :args => [amount]).gsub("\n", "\r")
+          text.gsub("|", "").ljust(32, " ")
       end
     end
   end
