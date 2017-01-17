@@ -132,7 +132,8 @@ class Platform::EMV
         hash[app[0]] = app[1]; hash
       end
       mili = EmvTransaction.timeout * 1000
-      menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
+      selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
+      selected ? selected : -1
     end
   end
 
