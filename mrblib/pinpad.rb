@@ -83,8 +83,8 @@ class Platform
           response["return"], buf, notification = Device::EMV::Pinpad.get_pin
 
           if response["return"] == EmvSharedLibrary::PPCOMP_OK
-            response["ksn"] = buf[0..15]
-            response["block"] = buf[16..35]
+            response["block"] = buf[0..15]
+            response["ksn"] = buf[16..-1]
             break
           end
 
