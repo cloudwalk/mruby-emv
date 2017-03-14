@@ -109,10 +109,10 @@ class Platform::EMV
   def self.init(port = "01")
     # TODO Scalone: Remove it from here, mrbgems shouldn't know DaFunk exists.
     include DaFunk::Helper
-    Platform::EMV.open(port)
+    ret = Platform::EMV.open(port)
     Platform::EMV::Pinpad.init
     @version = Platform::EMV::Pinpad.firmaware_version.to_s
-    true
+    ret
   end
 
   def self.internal_menu_title(str)
