@@ -127,7 +127,7 @@ mrb_pinpad_s_check_event(mrb_state *mrb, mrb_value klass)
 }
 
 static mrb_value
-mrb_pinpad_s_encrypt_buffer(mrb_state *mrb, mrb_value klass)
+mrb_pinpad_s__encrypt_buffer(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
   OUTPUT output[1024]={0x00};
@@ -264,7 +264,7 @@ mrb_pinpad_init(mrb_state* mrb)
   mrb_define_class_method(mrb , pinpad , "get_pin"               , mrb_pinpad_s_get_pin               , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , pinpad , "start_check_event"     , mrb_pinpad_s_start_check_event     , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "check_event"           , mrb_pinpad_s_check_event           , MRB_ARGS_REQ(1));
-  mrb_define_class_method(mrb , pinpad , "encrypt_buffer"        , mrb_pinpad_s_encrypt_buffer        , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , pinpad , "_encrypt_buffer"       , mrb_pinpad_s__encrypt_buffer       , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "get_dukpt"             , mrb_pinpad_s_get_dukpt             , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "start_chip_direct"     , mrb_pinpad_s_start_chip_direct     , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , pinpad , "chip_direct"           , mrb_pinpad_s_chip_direct           , MRB_ARGS_NONE());

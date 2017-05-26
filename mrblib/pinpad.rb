@@ -107,6 +107,17 @@ class Platform
         response
       end
 
+      def self.encrypt_buffer(msg)
+        case msg.to_s[0]
+        when "3"
+          slot = msg[1..2].to_i
+          message = msg[34..-1]
+          Device::Crypto.dukpt_encrypt_buffer(slot, [message].pack("H*"))
+        else
+          self._encrypt_buffer(msg)
+        end
+      end
+
       private
       def self.input_pin(index, pan, text)
         "3" +
