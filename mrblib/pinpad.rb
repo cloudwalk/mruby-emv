@@ -111,7 +111,7 @@ class Platform
         case msg.to_s[0]
         when "3"
           slot = msg[1..2].to_i
-          message = msg[34..-1]
+          message = msg[35..-1]
           Device::Crypto.dukpt_encrypt_buffer(slot, [message].pack("H*"))
         else
           self._encrypt_buffer(msg)
