@@ -118,7 +118,31 @@ class Platform
         end
       end
 
+      def self.key_kcv(index)
+        pin  = self._key_kcv(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_PIN  , index)
+        data = self._key_kcv(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_DATA , index)
+        {
+          :pin  => convert_result_to_hex(pin),
+          :data => convert_result_to_hex(data)
+        }
+      end
+
+      def self.key_ksn(index)
+        pin  = self._key_ksn(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_PIN  , index)
+        data = self._key_ksn(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_DATA , index)
+        {
+          :pin  => convert_result_to_hex(pin),
+          :data => convert_result_to_hex(data)
+        }
+      end
+
       private
+
+      def self.convert_result_to_hex(result)
+        ret, binary = result
+        [ret, binary.to_s.unpack("H*").first.to_s.upcase]
+      end
+
       def self.input_pin(index, pan, text)
         "3" +
           rjust(index.to_s, 2, "0") +
