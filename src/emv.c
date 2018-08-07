@@ -152,6 +152,22 @@ void bcGetAidData (const char *aid) {
   static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 {
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  current_mrb   = mrb;
+  current_klass = klass;
+
+  int err = PP_SetCallbacks((ppCallbacks_t) {
+    .callbackVersion = PP_CALLBACK_VERSION,
+    .showMenu = bcShowMenu,
+    .showMessage = bcShowMessage,
+    .showPinEntry = bcPinEntry,
+    .setLeds = bcSetLeds
+    // .setLeds = bcSetLeds,
+    // .beep = bcBeep,
+    // .getAidData = bcGetAidData
+  });
+  return mrb_fixnum_value(PP_Open());
+#else
   mrb_value com;
   DSP_Callback_Stru dsp_st;
 
@@ -170,6 +186,7 @@ mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
   PP_DspCallbacks(&dsp_st);
 
   return mrb_fixnum_value(PP_Open(RSTRING_PTR(com)));
+#endif
 }
 
   static mrb_value
