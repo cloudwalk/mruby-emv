@@ -125,6 +125,30 @@ void GDSP_Text (unsigned long ulFlags, const char *pszTxt1, const char *pszTxt2)
       mrb_fixnum_value(ulFlags), text1, text2);
 }
 
+int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu[], unsigned int nItems, unsigned int timeout) {
+  return 0;
+}
+
+int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
+  return 0;
+}
+
+int bcPinEntry (const char *message, unsigned long long amount, unsigned int digits) {
+  return 0;
+}
+
+void bcSetLeds (ppLeds_t leds) {
+
+}
+
+void bcBeep(ppBeepType_t beepType) {
+
+}
+
+void bcGetAidData (const char *aid) {
+
+}
+
   static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 {
