@@ -9,7 +9,12 @@
 #include "mruby/array.h"
 #include "mruby/string.h"
 #include "mruby/hash.h"
+
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+#include "bc.h"
+#else
 #include "ppcomp.h"
+#endif
 
 static mrb_value
 mrb_emv_table_s_init(mrb_state *mrb, mrb_value klass)
