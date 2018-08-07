@@ -9,7 +9,15 @@
 #include "mruby/array.h"
 #include "mruby/string.h"
 #include "mruby/hash.h"
+
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+#include "bc.h"
+#include <sdk_tplus.h>
+#define PPCOMP_OK PP_OK
+#define PPCOMP_NOTIFY PP_NOTIFY
+#else
 #include "ppcomp.h"
+#endif
 
 /*----------------------*/
 /* Flags para DSP_Text  */
