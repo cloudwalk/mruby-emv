@@ -126,7 +126,19 @@ void GDSP_Text (unsigned long ulFlags, const char *pszTxt1, const char *pszTxt2)
 }
 
 int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu[], unsigned int nItems, unsigned int timeout) {
-  return 0;
+  int i = 0;
+  mrb_value ret;
+  char menu_string[70];
+
+  memset(menu_string, 0, sizeof(menu_string));
+
+  for (i = 0; i < nItems; i++) {
+    strcat(menu_string, menu[i]);
+    strcat(menu_string, "\r");
+  }
+  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1, mrb_str_new_cstr(current_mrb, menu_string));
+
+  return mrb_fixnum(ret);
 }
 
 int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
