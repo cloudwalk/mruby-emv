@@ -30,6 +30,139 @@ class Platform
         attr_accessor :pinpad
         attr_reader :manufacturer, :details, :ctls, :firmaware_version, :shared_version,
           :application_version, :serial_number
+        alias_method :orig_info, :info
+        alias_method :orig_set_working_key, :set_working_key
+        alias_method :orig_display, :display
+        alias_method :orig_start_get_key, :start_get_key
+        alias_method :orig_get_key, :get_key
+        alias_method :orig_start_get_pin, :start_get_pin
+        alias_method :orig_get_pin, :get_pin
+        alias_method :orig_start_check_event, :start_check_event
+        alias_method :orig_check_event, :check_event
+        alias_method :orig__encrypt_buffer, :_encrypt_buffer
+        alias_method :orig_get_dukpt, :get_dukpt
+        alias_method :orig_start_chip_direct, :start_chip_direct
+        alias_method :orig_chip_direct, :chip_direct
+        alias_method :orig_start_generic_command, :start_generic_command
+        alias_method :orig_generic_command, :generic_command
+        alias_method :orig_key_test, :key_test
+        alias_method :orig__key_kcv, :_key_kcv
+        alias_method :orig__key_ksn, :_key_ksn
+      end
+
+      def self.change_working_directory(&block)
+        Dir.chdir("/home/LEGACY_FS/SYSTEM")
+        ret = block.call
+        Dir.chdir("/home/APPS/ohyeah")
+        ret
+      end
+
+      def self.info(input)
+        change_working_directory do
+          orig_info(inupt)
+        end
+      end
+
+      def self.set_working_key(input)
+        change_working_directory do
+          orig_set_working_key(input)
+        end
+      end
+
+      def self.display(msg)
+        change_working_directory do
+          orig_display(msg)
+        end
+      end
+
+      def self.start_get_key
+        change_working_directory do
+          orig_start_get_key
+        end
+      end
+
+      def self.get_key
+        change_working_directory do
+          orig_get_key
+        end
+      end
+
+      def self.start_get_pin(input)
+        change_working_directory do
+          orig_start_get_pin(input)
+        end
+      end
+
+      def self.get_pin
+        change_working_directory do
+          orig_get_pin
+        end
+      end
+
+      def self.start_check_event(input)
+        change_working_directory do
+          orig_start_check_event(input)
+        end
+      end
+
+      def self.check_event(input)
+        change_working_directory do
+          orig_check_event(input)
+        end
+      end
+
+      def self._encrypt_buffer(input)
+        change_working_directory do
+          orig__encrypt_buffer(input)
+        end
+      end
+
+      def self.get_dukpt(input)
+        change_working_directory do
+          orig_get_dukpt(input)
+        end
+      end
+
+      def self.start_chip_direct(input)
+        change_working_directory do
+          orig_start_chip_direct(input)
+        end
+      end
+
+      def self.chip_direct
+        change_working_directory do
+          orig_chip_direct
+        end
+      end
+
+      def self.start_generic_command(input)
+        change_working_directory do
+          orig_start_generic_command(input)
+        end
+      end
+
+      def self.generic_command
+        change_working_directory do
+          orig_generic_command
+        end
+      end
+
+      def self.key_test(type, operation, index)
+        change_working_directory do
+          orig_key_test(type, operation, index)
+        end
+      end
+
+      def self._key_kcv(type, operation, index)
+        change_working_directory do
+          orig__key_kcv(type, operation, index)
+        end
+      end
+
+      def self._key_ksn(type, operation, index)
+        change_working_directory do
+          orig__key_ksn(type, operation, index)
+        end
       end
 
       def self.init
