@@ -59,7 +59,7 @@ class Platform
 
       def self.info(input)
         change_working_directory do
-          self.orig_info(inupt)
+          self.orig_info(input)
         end
       end
 
