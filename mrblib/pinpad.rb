@@ -59,109 +59,109 @@ class Platform
 
       def self.info(input)
         change_working_directory do
-          orig_info(inupt)
+          self.orig_info(inupt)
         end
       end
 
       def self.set_working_key(input)
         change_working_directory do
-          orig_set_working_key(input)
+          self.orig_set_working_key(input)
         end
       end
 
       def self.display(msg)
         change_working_directory do
-          orig_display(msg)
+          self.orig_display(msg)
         end
       end
 
       def self.start_get_key
         change_working_directory do
-          orig_start_get_key
+          self.orig_start_get_key
         end
       end
 
       def self.get_key
         change_working_directory do
-          orig_get_key
+          self.orig_get_key
         end
       end
 
       def self.start_get_pin(input)
         change_working_directory do
-          orig_start_get_pin(input)
+          self.orig_start_get_pin(input)
         end
       end
 
       def self.get_pin
         change_working_directory do
-          orig_get_pin
+          self.orig_get_pin
         end
       end
 
       def self.start_check_event(input)
         change_working_directory do
-          orig_start_check_event(input)
+          self.orig_start_check_event(input)
         end
       end
 
       def self.check_event(input)
         change_working_directory do
-          orig_check_event(input)
+          self.orig_check_event(input)
         end
       end
 
       def self._encrypt_buffer(input)
         change_working_directory do
-          orig__encrypt_buffer(input)
+          self.orig__encrypt_buffer(input)
         end
       end
 
       def self.get_dukpt(input)
         change_working_directory do
-          orig_get_dukpt(input)
+          self.orig_get_dukpt(input)
         end
       end
 
       def self.start_chip_direct(input)
         change_working_directory do
-          orig_start_chip_direct(input)
+          self.orig_start_chip_direct(input)
         end
       end
 
       def self.chip_direct
         change_working_directory do
-          orig_chip_direct
+          self.orig_chip_direct
         end
       end
 
       def self.start_generic_command(input)
         change_working_directory do
-          orig_start_generic_command(input)
+          self.orig_start_generic_command(input)
         end
       end
 
       def self.generic_command
         change_working_directory do
-          orig_generic_command
+          self.orig_generic_command
         end
       end
 
       def self.key_test(type, operation, index)
         change_working_directory do
-          orig_key_test(type, operation, index)
+          self.orig_key_test(type, operation, index)
         end
       end
 
       def self._key_kcv(type, operation, index)
         change_working_directory do
-          orig__key_kcv(type, operation, index)
+          self.orig__key_kcv(type, operation, index)
         end
       end
 
       def self._key_ksn(type, operation, index)
         change_working_directory do
-          orig__key_ksn(type, operation, index)
+          self.orig__key_ksn(type, operation, index)
         end
       end
 
