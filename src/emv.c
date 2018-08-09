@@ -141,6 +141,10 @@ int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu
   return mrb_fixnum(ret);
 }
 
+int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
+  return 0;
+}
+
 int bcPinEntry (const char *message, unsigned long long amount, unsigned int digits) {
   return 0;
 }
