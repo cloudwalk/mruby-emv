@@ -102,6 +102,15 @@ class Platform::EMV
     alias_method :orig_open, :open
     alias_method :orig_close, :close
     alias_method :orig_abort, :abort
+
+    alias_method :orig_start_get_card, :start_get_card
+    alias_method :orig_get_card, :get_card
+    alias_method :orig_start_go_on_chip, :start_go_on_chip
+    alias_method :orig_go_on_chip, :go_on_chip
+    alias_method :orig_finish_chip, :finish_chip
+    alias_method :orig_start_remove_card, :start_remove_card
+    alias_method :orig_remove_card, :remove_card
+    alias_method :orig_timestamp, :timestamp
   end
 
   def self.change_working_directory(&block)
@@ -126,6 +135,54 @@ class Platform::EMV
   def self.abort
     change_working_directory do
       self.orig_abort
+    end
+  end
+
+  def self.start_get_card(value)
+    change_working_directory do
+      self.orig_start_get_card(value)
+    end
+  end
+
+  def self.get_card
+    change_working_directory do
+      self.orig_get_card
+    end
+  end
+
+  def self.start_go_on_chip(process, tags, optional_tags)
+    change_working_directory do
+      self.orig_start_go_on_chip(process, tags, optional_tags)
+    end
+  end
+
+  def self.go_on_chip
+    change_working_directory do
+      self.orig_go_on_chip
+    end
+  end
+
+  def self.finish_chip(finish, tags)
+    change_working_directory do
+      self.orig_finish_chip(finish, tags)
+    end
+  end
+
+  def self.start_remove_card(input)
+    change_working_directory do
+      self.orig_start_remove_card(input)
+    end
+  end
+
+  def self.remove_card
+    change_working_directory do
+      self.orig_remove_card
+    end
+  end
+
+  def self.timestamp(acquirer)
+    change_working_directory do
+      self.orig_timestamp(acquirer)
     end
   end
 
