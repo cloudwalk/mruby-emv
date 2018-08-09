@@ -99,6 +99,34 @@ class Platform::EMV
 
   class << self
     attr_reader :version, :menu_title_block, :menu_show_block, :text_show_block
+    alias_method :orig_open, :open
+    alias_method :orig_close, :close
+    alias_method :orig_abort, :abort
+  end
+
+  def self.change_working_directory(&block)
+    Dir.chdir("/home/LEGACY_FS/SYSTEM")
+    ret = block.call
+    Dir.chdir("/home/APPS/ohyeah")
+    ret
+  end
+
+  def self.open(port)
+    change_working_directory do
+      self.orig_open(port)
+    end
+  end
+
+  def self.close(message)
+    change_working_directory do
+      self.orig_close(message)
+    end
+  end
+
+  def self.abort
+    change_working_directory do
+      self.orig_abort
+    end
   end
 
   def self.version
