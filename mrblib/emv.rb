@@ -99,6 +99,8 @@ class Platform::EMV
 
   class << self
     attr_reader :version, :menu_title_block, :menu_show_block, :text_show_block
+    attr_accessor :fiber, :use_fiber
+
     alias_method :orig_open, :open
     alias_method :orig_close, :close
     alias_method :orig_abort, :abort
@@ -139,14 +141,29 @@ class Platform::EMV
   end
 
   def self.start_get_card(value)
+    self.use_fiber = true
+    ContextLog.info "1use_fiber set [#{use_fiber}] fiber [#{self.fiber}]"
     change_working_directory do
       self.orig_start_get_card(value)
     end
   end
 
   def self.get_card
-    change_working_directory do
-      self.orig_get_card
+    if use_fiber
+      ContextLog.info "2use_fiber set [#{use_fiber}] fiber [#{self.fiber}]"
+      self.fiber = Fiber.new do
+        ContextLog.info "BEFORE wk"
+        change_working_directory do
+        ContextLog.info "BEFORE yield"
+          Fiber.yield
+          ContextLog.info "AFTER yield"
+          self.orig_get_card
+        end
+      end.resume
+    else
+      change_working_directory do
+        self.orig_get_card
+      end
     end
   end
 
@@ -209,15 +226,33 @@ class Platform::EMV
     end
   end
 
+  def self.fiber_resume
+    ContextLog.info "Fiber #{self.fiber}"
+    if self.fiber
+      self.use_fiber = false
+      self.fiber.resume
+    end
+  end
+
   def self.internal_menu_show(opts)
+    ContextLog.info "MENU #{opts}"
+    sleep 1
     if self.menu_show_block
-      self.menu_show_block.call(opts)
+      ContextLog.info "FUNKY"
+      ret = self.menu_show_block.call(opts)
+      ContextLog.info "AFTER MENU"
+      fiber_resume
+      ret
     else
+      ContextLog.info "NO FUNKY"
       selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
         hash[app[0]] = app[1]; hash
       end
       mili = EmvTransaction.timeout * 1000
+      ContextLog.info "BEFORE MENU"
       selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
+      ContextLog.info "AFTER MENU"
+      fiber_resume
       selected ? selected : -1
     end
   end

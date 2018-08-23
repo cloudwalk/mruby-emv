@@ -136,6 +136,9 @@ int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu
     strcat(menu_string, menu[i]);
     strcat(menu_string, "\r");
   }
+
+  /*ContextLog(current_mrb, 0, "OIIII");*/
+  /*ContextLog(current_mrb, 0, "OPTS [%s]", menu_string);*/
   ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1, mrb_str_new_cstr(current_mrb, menu_string));
 
   return mrb_fixnum(ret);
@@ -178,6 +181,9 @@ mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
     // .beep = bcBeep,
     // .getAidData = bcGetAidData
   });
+
+  /*ContextLog(mrb, 0, "OPEN");*/
+
   return mrb_fixnum_value(PP_Open());
 #else
   mrb_value com;
@@ -224,6 +230,10 @@ mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 
   mrb_get_args(mrb, "S", &value);
 
+  current_mrb   = mrb;
+  current_klass = klass;
+
+  /*ContextLog(mrb, 0, "BEFORE PP_StartGetCard");*/
   return mrb_fixnum_value(PP_StartGetCard(RSTRING_PTR(value)));
 }
 
@@ -234,6 +244,10 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   mrb_value array;
   mrb_int ret;
 
+  current_mrb   = mrb;
+  current_klass = klass;
+
+  ContextLog(mrb, 0, "BEFORE PP_GetCard");
   ret = PP_GetCard(output, msg);
 
   array  = mrb_ary_new(mrb);
