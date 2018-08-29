@@ -220,7 +220,6 @@ mrb_emv_s_abort(mrb_state *mrb, mrb_value klass)
 mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_value value;
-  OUTPUT out[11]={0x00};
   mrb_int ret;
 
   mrb_get_args(mrb, "S", &value);
@@ -231,7 +230,7 @@ mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
   static mrb_value
 mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
 {
-  OUTPUT output[1024]={0x00}, msg[33]={0x00};
+  OUTPUT output={0x00}, msg={0x00};
   mrb_value array;
   mrb_int ret;
 
@@ -262,7 +261,7 @@ mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
   static mrb_value
 mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
 {
-  OUTPUT output[1024]={0x00}, msg[33]={0x00};
+  OUTPUT output={0x00}, msg={0x00};
   mrb_value array;
   mrb_int ret;
 
@@ -286,7 +285,7 @@ mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
 mrb_emv_s_finish_chip(mrb_state *mrb, mrb_value klass)
 {
   mrb_value array, finish, tags;
-  OUTPUT output[1024]={0x00};
+  OUTPUT output={0x00};
   mrb_int ret;
 
   mrb_get_args(mrb, "SS", &finish, &tags);
@@ -313,7 +312,7 @@ mrb_pinpad_s_start_remove_card(mrb_state *mrb, mrb_value klass)
 mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output[1024]={0x00};
+  OUTPUT output={0x00};
   mrb_value array;
 
   ret = PP_RemoveCard(output);
@@ -329,16 +328,16 @@ mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
 mrb_emv_s_timestamp(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT out[11];
+  OUTPUT output={0x00};
   mrb_value acquirer, array;
   mrb_get_args(mrb, "S", &acquirer);
 
-  ret = PP_GetTimeStamp(RSTRING_PTR(acquirer), out);
+  ret = PP_GetTimeStamp(RSTRING_PTR(acquirer), output);
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
 
-  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new(mrb, out, 10));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new(mrb, output, 10));
 
   return array;
 }
