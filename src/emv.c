@@ -247,7 +247,7 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   current_mrb   = mrb;
   current_klass = klass;
 
-  ContextLog(mrb, 0, "BEFORE PP_GetCard");
+  /*ContextLog(mrb, 0, "BEFORE PP_GetCard");*/
   ret = PP_GetCard(output, msg);
 
   array  = mrb_ary_new(mrb);

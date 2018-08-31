@@ -134,26 +134,12 @@ class Platform::EMV
   end
 
   def self.internal_menu_show(opts)
-    ContextLog.info "MENU #{opts}"
-    sleep 1
-    if self.menu_show_block
-      ContextLog.info "FUNKY"
-      ret = self.menu_show_block.call(opts)
-      ContextLog.info "AFTER MENU"
-      fiber_resume
-      ret
-    else
-      ContextLog.info "NO FUNKY"
-      selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
-        hash[app[0]] = app[1]; hash
-      end
-      mili = EmvTransaction.timeout * 1000
-      ContextLog.info "BEFORE MENU"
-      selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
-      ContextLog.info "AFTER MENU"
-      fiber_resume
-      selected ? selected : -1
+    selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
+      hash[app[0]] = app[1]; hash
     end
+    mili = EmvTransaction.timeout * 1000
+    selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
+    selected ? selected : -1
   end
 
   def self.internal_text_show(flags, text1, text2)
