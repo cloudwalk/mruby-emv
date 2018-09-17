@@ -13,6 +13,11 @@
 #ifdef __FRAMEWORK_TELIUM_PLUS__
 #include "bc.h"
 #include <sdk_tplus.h>
+#include <OSL_Logger.h>
+#include <pinpadEmv.h>
+#include <larlib/log.h>
+#include <abecs.h>
+#include <pinpadLog.h>
 #define PPCOMP_OK PP_OK
 #define PPCOMP_NOTIFY PP_NOTIFY
 #else
@@ -81,87 +86,99 @@
 mrb_state *current_mrb;
 mrb_value current_klass;
 
-void GDSP_Clear (void)
-{
-  mrb_value display;
-  struct RClass *device;
-
-  device  = mrb_class_get(current_mrb, "Device");
-  display = mrb_const_get(current_mrb, mrb_obj_value(device), mrb_intern_lit(current_mrb, "Display"));
-
-  mrb_funcall(current_mrb, display, "clear", 0);
-}
-
-int GDSP_iMenuStart (const char *pszTitle, unsigned long *pulFlags)
-{
-  mrb_value ret;
-
-  *pulFlags = DSP_F_BLOCK;
-
-  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_title", 1,
-      mrb_str_new(current_mrb, pszTitle, 32));
-
-  return mrb_fixnum(ret);
-}
-
-int GDSP_iMenuShow (unsigned long ulFlags, const char *pszOpts, int iOptSel)
-{
-  mrb_value ret;
-
-  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1,
-      mrb_str_new_cstr(current_mrb, pszOpts));
-
-  return mrb_fixnum(ret);
-}
-
-void GDSP_Text (unsigned long ulFlags, const char *pszTxt1, const char *pszTxt2)
-{
-  mrb_value text1, text2;
-
-  text1 = (pszTxt1) ? mrb_str_new_cstr(current_mrb, pszTxt1) : mrb_nil_value();
-  text2 = (pszTxt2) ? mrb_str_new_cstr(current_mrb, pszTxt2) : mrb_nil_value();
-
-  mrb_funcall(current_mrb, current_klass, "internal_text_show", 3,
-      mrb_fixnum_value(ulFlags), text1, text2);
-}
+extern int getChar(int timeout);
 
 int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu[], unsigned int nItems, unsigned int timeout) {
-  int i = 0;
+  int ch, i = 0, iRet = 1;
   mrb_value ret;
-  char menu_string[70];
+  char menu_string[100];
+  char buf[50];
 
   memset(menu_string, 0, sizeof(menu_string));
-
+  strncat(menu_string, "SELECIONE:\n", 11);
   for (i = 0; i < nItems; i++) {
-    strcat(menu_string, menu[i]);
-    strcat(menu_string, "\r");
+    memset(buf, 0, sizeof(buf));
+    sprintf(&buf[0], "%d. %s\n", i+1, menu[i]);
+    strcat(menu_string, buf);
   }
 
-  /*ContextLog(current_mrb, 0, "OIIII");*/
-  /*ContextLog(current_mrb, 0, "OPTS [%s]", menu_string);*/
-  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1, mrb_str_new_cstr(current_mrb, menu_string));
+  formatAndPrintDisplay(menu_string, 1, 0);
 
-  return mrb_fixnum(ret);
+  ch = getChar(600000);
+
+  if ('1' <= ch && ch <= '9')
+    iRet = ch - '1';
+  else
+    iRet = BASE_ERR_CANCEL;
+
+  // ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1, mrb_str_new_cstr(current_mrb, menu_string));
+  //OSL_Warning("bcShowMenu:result = %d", iRet);
+
+  return iRet;
+}
+
+static const char *getMessageStr(ppMessageType_t messageId) {
+  switch (messageId) {
+    case PPMSG_TEXT_S: return "%s";
+    case PPMSG_PROCESSING: return "PROCESSANDO";
+    case PPMSG_INSERT_SWIPE_CARD: return "INSIRA OU PASSE O CARTAO";
+    case PPMSG_TAP_INSERT_SWIPE_CARD: return "APROXIME, INSIRA\nOU PASSE O CARTAO";
+    case PPMSG_SELECT: return "SELECIONE";
+    case PPMSG_SELECTED_S: return "SELECIONADO:\n%s";
+    case PPMSG_INVALID_APP: return "APLICACAO INVALIDA";
+    case PPMSG_WRONG_PIN_S: return "PIN ERRADO\n%s TENTATIVAS";
+    case PPMSG_PIN_LAST_TRY: return "ULTIMA TENTATIVA";
+    case PPMSG_PIN_BLOCKED: return "PIN bloqueado";
+    case PPMSG_PIN_VERIFIED: return NULL;
+    case PPMSG_CARD_BLOCKED: return "CARTAO BLOQUEADO";
+    case PPMSG_REMOVE_CARD: return "REMOVA CARTAO";
+    case PPMSG_UPDATING_TABLES: return "";
+    case PPMSG_UPDATING_RECORD: return NULL;
+    case PPMSG_SECOND_TAP: return "RE-APROXIME O CARTAO";
+    default: NULL;
+  }
 }
 
 int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
+  char msg[256]={0x00};
+
+  //OSL_Warning("bcShowMessage [%s] [%d] [%s]", getMessageStr(messageId), messageId, messageText);
+	goalClearScreen(TRUE);
+
+  if (getMessageStr(messageId)) {
+    if (messageText)
+      sprintf(msg, getMessageStr(messageId), messageText);
+    else
+      strcpy(msg, getMessageStr(messageId));
+    formatAndPrintDisplay(msg, 2, 0);
+  }
   return 0;
 }
 
 int bcPinEntry (const char *message, unsigned long long amount, unsigned int digits) {
+  char pin[12+1]={0x00};
+  char msg[256]={0x00};
+
+  //OSL_Warning("bcPinEntry [%s][%llu][%d]", message, amount, digits);
+
+  memcpy(pin, "************", digits);
+
+  sprintf(msg, "VALOR: %llu.%.2d\n%s", amount / 100, amount % 100, pin);
+
+  formatAndPrintDisplay(msg, 0, 0);
   return 0;
 }
 
 void bcSetLeds (ppLeds_t leds) {
-
+  //OSL_Warning("bcSetLeds");
 }
 
 void bcBeep(ppBeepType_t beepType) {
-
+  //OSL_Warning("bcBeep");
 }
 
 void bcGetAidData (const char *aid) {
-
+  //OSL_Warning("bcGetAidData");
 }
 
   static mrb_value
@@ -181,10 +198,25 @@ mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
     // .beep = bcBeep,
     // .getAidData = bcGetAidData
   });
+  //OSL_Warning("mrb_emv_s_open: PP_SetCallbacks = %d", err);
 
-  /*ContextLog(mrb, 0, "OPEN");*/
+  // Ativa os canais de log. A constante 0x8F00 Ã© o SAP usado no trace.
+  logSetChannels(LOG_ALL_CHANNELS, 1, &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  logSetChannels(0, 1, LOG_DEBUG, &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  logSetChannels(LOG_CH_BASE, 1, LOG_DEBUG, &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  abecsLogSetChannels(LOGCH_ABECS, LOGCH_ABECS_COUNT, LOG_DEBUG,
+  &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  pinpadLogSetChannels(LOGCH_PINPAD, LOGCH_PINPAD_COUNT, LOG_DEBUG,
+  &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  pinpadLogSetChannels(LOGCH_PINPAD_EWL_START, LOGCH_PINPAD_EWL_COUNT, LOG_DEBUG,
+  &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
 
-  return mrb_fixnum_value(PP_Open());
+  //OSL_Warning("Liga os logs da BC");
+
+  err = PP_Open();
+  //OSL_Warning("mrb_emv_s_open: PP_Open = %d", err);
+
+  return mrb_fixnum_value(err);
 #else
   mrb_value com;
   DSP_Callback_Stru dsp_st;
@@ -210,10 +242,13 @@ mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
   static mrb_value
 mrb_emv_s_close(mrb_state *mrb, mrb_value klass)
 {
+  int err;
   mrb_value msg;
   mrb_get_args(mrb, "S", &msg);
 
-  return mrb_fixnum_value(PP_Close(RSTRING_PTR(msg)));
+  err = PP_Close(RSTRING_PTR(msg));
+  //OSL_Warning("mrb_emv_s_close: PP_Close = %d", err);
+  return mrb_fixnum_value(err);
 }
 
   static mrb_value
@@ -228,13 +263,14 @@ mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
   mrb_value value;
   mrb_int ret;
 
+  //OSL_Warning("mrb_emv_s_start_get_card");
+
   mrb_get_args(mrb, "S", &value);
 
-  current_mrb   = mrb;
-  current_klass = klass;
-
-  /*ContextLog(mrb, 0, "BEFORE PP_StartGetCard");*/
-  return mrb_fixnum_value(PP_StartGetCard(RSTRING_PTR(value)));
+  ret = PP_StartGetCard(RSTRING_PTR(value));
+  //OSL_Warning("mrb_emv_s_start_get_card: PP_StartGetCard = %d", ret);
+  Telium_Ttestall(0, 50);
+  return mrb_fixnum_value(ret);
 }
 
   static mrb_value
@@ -244,11 +280,12 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   mrb_value array;
   mrb_int ret;
 
-  current_mrb   = mrb;
-  current_klass = klass;
+  //OSL_Warning("mrb_emv_s_get_card");
 
-  /*ContextLog(mrb, 0, "BEFORE PP_GetCard");*/
+  //OSL_Warning("mrb_emv_s_start_get_card: PP_GetCard [%s][%s]", output, msg);
   ret = PP_GetCard(output, msg);
+  Telium_Ttestall(0, 50);
+  //OSL_Warning("mrb_emv_s_get_card: PP_GetCard = %d", ret);
 
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
@@ -257,6 +294,8 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   else
     mrb_ary_push(mrb, array, mrb_nil_value());
   if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, msg));
+
+  //OSL_Warning("/mrb_emv_s_get_card");
 
   return array;
 }
@@ -267,6 +306,12 @@ mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
   mrb_value process, tags, optional_tags;
 
   mrb_get_args(mrb, "SSS", &process, &tags, &optional_tags);
+
+  //OSL_Warning("[mrb_emv_s_start_go_on_chip]", process);
+
+  //OSL_Warning("psInput = [%s]", RSTRING_PTR(process));
+  //OSL_Warning("psTags = [%s]", RSTRING_PTR(tags));
+  //OSL_Warning("psTagsOpt = [%s]", RSTRING_PTR(optional_tags));
 
   return mrb_fixnum_value(PP_StartGoOnChip(RSTRING_PTR(process),
         RSTRING_PTR(tags), RSTRING_PTR(optional_tags)));
@@ -305,6 +350,8 @@ mrb_emv_s_finish_chip(mrb_state *mrb, mrb_value klass)
   mrb_get_args(mrb, "SS", &finish, &tags);
 
   ret = PP_FinishChip(RSTRING_PTR(finish), RSTRING_PTR(tags), output);
+
+  //OSL_Warning("PP_FinishChip [%d][%s]", ret, output);
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
