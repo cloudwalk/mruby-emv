@@ -166,9 +166,9 @@ int bcPinEntry (const char *message, unsigned long long amount, unsigned int dig
 
   memcpy(pin, "************", digits);
 
-  sprintf(msg, "VALOR: %llu.%.2d\n%s", amount / 100, amount % 100, pin);
+  sprintf(msg, "VALOR: %llu,%02llu\nSENHA: %s", (amount / 100), (amount % 100), pin);
 
-  formatAndPrintDisplay(msg, 0, 0);
+  formatAndPrintDisplay(msg, 1, 0);
   return 0;
 }
 
