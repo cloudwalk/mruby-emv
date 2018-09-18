@@ -105,7 +105,8 @@ int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu
 
   formatAndPrintDisplay(menu_string, 1, 0);
 
-  ch = getChar(600000);
+  do ch = getChar(60000);
+  while (ch == GL_RESULT_TIMEOUT);
 
   if ('1' <= ch && ch <= '9')
     iRet = ch - '1';
