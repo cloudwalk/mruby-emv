@@ -18,6 +18,7 @@
 #include <larlib/log.h>
 #include <abecs.h>
 #include <pinpadLog.h>
+#include <goalDisplay.h>
 #define PPCOMP_OK PP_OK
 #define PPCOMP_NOTIFY PP_NOTIFY
 #else
@@ -143,7 +144,7 @@ int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
   char msg[256]={0x00};
 
   //OSL_Warning("bcShowMessage [%s] [%d] [%s]", getMessageStr(messageId), messageId, messageText);
-	goalClearScreen(TRUE);
+  goalClearScreen(TRUE);
 
   if (getMessageStr(messageId)) {
     if (messageText)
@@ -160,6 +161,7 @@ int bcPinEntry (const char *message, unsigned long long amount, unsigned int dig
   char msg[256]={0x00};
 
   //OSL_Warning("bcPinEntry [%s][%llu][%d]", message, amount, digits);
+  goalClearScreen(TRUE);
 
   memcpy(pin, "************", digits);
 
