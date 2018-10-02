@@ -121,7 +121,7 @@ int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu
 
 static const char *getMessageStr(ppMessageType_t messageId) {
   switch (messageId) {
-    case PPMSG_TEXT_S: return "%s";
+    case PPMSG_TEXT_S: return NULL;
     case PPMSG_PROCESSING: return "PROCESSANDO";
     case PPMSG_INSERT_SWIPE_CARD: return "INSIRA OU PASSE O CARTAO";
     case PPMSG_TAP_INSERT_SWIPE_CARD: return "APROXIME, INSIRA\nOU PASSE O CARTAO";
@@ -133,8 +133,8 @@ static const char *getMessageStr(ppMessageType_t messageId) {
     case PPMSG_PIN_BLOCKED: return "PIN bloqueado";
     case PPMSG_PIN_VERIFIED: return NULL;
     case PPMSG_CARD_BLOCKED: return "CARTAO BLOQUEADO";
-    case PPMSG_REMOVE_CARD: return "REMOVA CARTAO";
-    case PPMSG_UPDATING_TABLES: return "";
+    case PPMSG_REMOVE_CARD: return NULL;
+    case PPMSG_UPDATING_TABLES: return NULL;
     case PPMSG_UPDATING_RECORD: return NULL;
     case PPMSG_SECOND_TAP: return "RE-APROXIME O CARTAO";
     default: NULL;
@@ -145,9 +145,10 @@ int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
   char msg[256]={0x00};
 
   //OSL_Warning("bcShowMessage [%s] [%d] [%s]", getMessageStr(messageId), messageId, messageText);
-  goalClearScreen(TRUE);
 
   if (getMessageStr(messageId)) {
+    goalClearScreen(TRUE);
+
     if (messageText)
       sprintf(msg, getMessageStr(messageId), messageText);
     else
