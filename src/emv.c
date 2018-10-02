@@ -158,6 +158,36 @@ int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
   return 0;
 }
 
+void showPinImage(void) {
+  long fileSize = 0;
+  FILE *bmpImage = NULL;
+  unsigned char *imgBuffer;
+
+  // Open BPM image
+  bmpImage = fopen("/home/APPS/ohyeah/shared/emv_enter_pin.bmp", "r");
+
+  if (bmpImage != NULL) {
+    // Get's the BMP lenght
+    fseek(bmpImage, 0L, SEEK_END);
+    fileSize = ftell(bmpImage);
+    fseek(bmpImage, 0L, SEEK_SET);
+
+    // Check if the size is higher than 0
+    if (fileSize <= 0) {
+      return;
+    }
+    // Create buffer to load the image
+    imgBuffer = (char *) malloc(fileSize);
+    // Load BMP image
+    fread(imgBuffer, fileSize, 1, bmpImage);
+    // Shows BPM into the screen
+    imgDisplay(imgBuffer, fileSize);
+    // Release memory
+    free(imgBuffer);
+    fclose(bmpImage);
+  }
+}
+
 int bcPinEntry (const char *message, unsigned long long amount, unsigned int digits) {
   char pin[12+1]={0x00};
   char msg[256]={0x00};
