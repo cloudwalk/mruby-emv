@@ -193,7 +193,9 @@ int bcPinEntry (const char *message, unsigned long long amount, unsigned int dig
   char msg[256]={0x00};
 
   //OSL_Warning("bcPinEntry [%s][%llu][%d]", message, amount, digits);
-  goalClearScreen(TRUE);
+
+  // goalClearScreen(TRUE);
+  showPinImage();
 
   memcpy(pin, "************", digits);
 
