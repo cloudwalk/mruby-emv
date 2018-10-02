@@ -201,7 +201,7 @@ int bcPinEntry (const char *message, unsigned long long amount, unsigned int dig
 
   sprintf(msg, "VALOR: %llu,%02llu\nSENHA: %s", (amount / 100), (amount % 100), pin);
 
-  formatAndPrintDisplay(msg, 1, 0);
+  formatAndPrintDisplay(msg, 2, 0);
   return 0;
 }
 
