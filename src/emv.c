@@ -154,6 +154,8 @@ int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
     else
       strcpy(msg, getMessageStr(messageId));
     formatAndPrintDisplay(msg, 2, 0);
+
+    if (messageId == PPMSG_WRONG_PIN_S || messageId == PPMSG_PIN_LAST_TRY || messageId == PPMSG_PIN_BLOCKED || messageId == PPMSG_CARD_BLOCKED) sleep(3);
   }
   return 0;
 }
