@@ -121,7 +121,7 @@ int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu
 
 static const char *getMessageStr(ppMessageType_t messageId) {
   switch (messageId) {
-    case PPMSG_TEXT_S: return "%s";
+    case PPMSG_TEXT_S: return NULL;
     case PPMSG_PROCESSING: return "PROCESSANDO";
     case PPMSG_INSERT_SWIPE_CARD: return "INSIRA OU PASSE O CARTAO";
     case PPMSG_TAP_INSERT_SWIPE_CARD: return "APROXIME, INSIRA\nOU PASSE O CARTAO";
@@ -133,8 +133,8 @@ static const char *getMessageStr(ppMessageType_t messageId) {
     case PPMSG_PIN_BLOCKED: return "PIN bloqueado";
     case PPMSG_PIN_VERIFIED: return NULL;
     case PPMSG_CARD_BLOCKED: return "CARTAO BLOQUEADO";
-    case PPMSG_REMOVE_CARD: return "REMOVA CARTAO";
-    case PPMSG_UPDATING_TABLES: return "";
+    case PPMSG_REMOVE_CARD: return NULL;
+    case PPMSG_UPDATING_TABLES: return NULL;
     case PPMSG_UPDATING_RECORD: return NULL;
     case PPMSG_SECOND_TAP: return "RE-APROXIME O CARTAO";
     default: NULL;
@@ -145,9 +145,10 @@ int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
   char msg[256]={0x00};
 
   //OSL_Warning("bcShowMessage [%s] [%d] [%s]", getMessageStr(messageId), messageId, messageText);
-  goalClearScreen(TRUE);
 
   if (getMessageStr(messageId)) {
+    goalClearScreen(TRUE);
+
     if (messageText)
       sprintf(msg, getMessageStr(messageId), messageText);
     else
@@ -157,18 +158,50 @@ int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
   return 0;
 }
 
+void showPinImage(void) {
+  long fileSize = 0;
+  FILE *bmpImage = NULL;
+  unsigned char *imgBuffer;
+
+  // Open BPM image
+  bmpImage = fopen("/home/APPS/ohyeah/shared/emv_enter_pin.bmp", "r");
+
+  if (bmpImage != NULL) {
+    // Get's the BMP lenght
+    fseek(bmpImage, 0L, SEEK_END);
+    fileSize = ftell(bmpImage);
+    fseek(bmpImage, 0L, SEEK_SET);
+
+    // Check if the size is higher than 0
+    if (fileSize <= 0) {
+      return;
+    }
+    // Create buffer to load the image
+    imgBuffer = (char *) malloc(fileSize);
+    // Load BMP image
+    fread(imgBuffer, fileSize, 1, bmpImage);
+    // Shows BPM into the screen
+    imgDisplay(imgBuffer, fileSize);
+    // Release memory
+    free(imgBuffer);
+    fclose(bmpImage);
+  }
+}
+
 int bcPinEntry (const char *message, unsigned long long amount, unsigned int digits) {
   char pin[12+1]={0x00};
   char msg[256]={0x00};
 
   //OSL_Warning("bcPinEntry [%s][%llu][%d]", message, amount, digits);
-  goalClearScreen(TRUE);
+
+  // goalClearScreen(TRUE);
+  showPinImage();
 
   memcpy(pin, "************", digits);
 
   sprintf(msg, "VALOR: %llu,%02llu\nSENHA: %s", (amount / 100), (amount % 100), pin);
 
-  formatAndPrintDisplay(msg, 1, 0);
+  formatAndPrintDisplay(msg, 2, 0);
   return 0;
 }
 
