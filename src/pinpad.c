@@ -9,7 +9,14 @@
 #include "mruby/array.h"
 #include "mruby/string.h"
 #include "mruby/hash.h"
+
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+#include "bc.h"
+#define PPCOMP_OK PP_OK
+#define PPCOMP_NOTIFY PP_NOTIFY
+#else
 #include "ppcomp.h"
+#endif
 
 static mrb_value
 mrb_pinpad_s_info(mrb_state *mrb, mrb_value klass)
@@ -201,7 +208,7 @@ static mrb_value
 mrb_pinpad_s_generic_command(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT output[1024]={0x00}, msg[33]={0x00};
+  OUTPUT output[1024]={0x00}, msg[1024]={0x00};
   mrb_value array;
 
   ret = PP_GenericCmd(output, msg);
@@ -224,7 +231,11 @@ mrb_pinpad_s_key_test(mrb_state *mrb, mrb_value klass)
 
   mrb_get_args(mrb, "iii", &type, &operation, &index);
 
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  return mrb_fixnum_value(-1);
+#else
   return mrb_fixnum_value(GEDI_KMS_KeyPresenceTest(type, operation, index));
+#endif
 }
 
 static mrb_value
@@ -236,7 +247,11 @@ mrb_pinpad_s__key_kcv(mrb_state *mrb, mrb_value klass)
 
   mrb_get_args(mrb, "iii", &type, &operation, &index);
 
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  ret = -1;
+#else
   ret = GEDI_KMS_KCVGet(type, operation, index, &kcv);
+#endif
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
@@ -254,7 +269,11 @@ mrb_pinpad_s__key_ksn(mrb_state *mrb, mrb_value klass)
 
   mrb_get_args(mrb, "iii", &type, &operation, &index);
 
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  ret = -1;
+#else
   ret = GEDI_KMS_DUKPTKSNGet(type, operation, index, &ksn);
+#endif
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));

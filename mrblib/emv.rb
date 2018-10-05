@@ -99,6 +99,7 @@ class Platform::EMV
 
   class << self
     attr_reader :version, :menu_title_block, :menu_show_block, :text_show_block
+    attr_accessor :fiber, :use_fiber
   end
 
   def self.version
@@ -124,17 +125,21 @@ class Platform::EMV
     end
   end
 
-  def self.internal_menu_show(opts)
-    if self.menu_show_block
-      self.menu_show_block.call(opts)
-    else
-      selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
-        hash[app[0]] = app[1]; hash
-      end
-      mili = EmvTransaction.timeout * 1000
-      selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
-      selected ? selected : -1
+  def self.fiber_resume
+    ContextLog.info "Fiber #{self.fiber}"
+    if self.fiber
+      self.use_fiber = false
+      self.fiber.resume
     end
+  end
+
+  def self.internal_menu_show(opts)
+    selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
+      hash[app[0]] = app[1]; hash
+    end
+    mili = EmvTransaction.timeout * 1000
+    selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
+    selected ? selected : -1
   end
 
   def self.internal_text_show(flags, text1, text2)

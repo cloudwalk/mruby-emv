@@ -9,7 +9,14 @@
 #include "mruby/array.h"
 #include "mruby/string.h"
 #include "mruby/hash.h"
+
+#include <OSL_Logger.h>
+
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+#include "bc.h"
+#else
 #include "ppcomp.h"
+#endif
 
 static mrb_value
 mrb_emv_table_s_init(mrb_state *mrb, mrb_value klass)
@@ -25,6 +32,10 @@ mrb_emv_table_s_rec(mrb_state *mrb, mrb_value klass)
 {
   mrb_value table;
   mrb_get_args(mrb, "S", &table);
+
+  //OSL_Warning("0mrb_emv_table_s_rec [%d]", RSTRING_LEN(table));
+  //OSL_Warning("1mrb_emv_table_s_rec [%.165s]", RSTRING_PTR(table));
+  //OSL_Warning("2mrb_emv_table_s_rec [%s]", &RSTRING_PTR(table)[165]);
 
   return mrb_fixnum_value(PP_TableLoadRec(RSTRING_PTR(table)));
 }
