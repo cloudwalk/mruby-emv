@@ -130,7 +130,7 @@ static const char *getMessageStr(ppMessageType_t messageId) {
     case PPMSG_INVALID_APP: return "APLICACAO INVALIDA";
     case PPMSG_WRONG_PIN_S: return "PIN ERRADO\n%s TENTATIVAS";
     case PPMSG_PIN_LAST_TRY: return "ULTIMA TENTATIVA";
-    case PPMSG_PIN_BLOCKED: return "PIN bloqueado";
+    case PPMSG_PIN_BLOCKED: return "PIN BLOQUEADO";
     case PPMSG_PIN_VERIFIED: return NULL;
     case PPMSG_CARD_BLOCKED: return "CARTAO BLOQUEADO";
     case PPMSG_REMOVE_CARD: return NULL;
@@ -154,6 +154,8 @@ int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
     else
       strcpy(msg, getMessageStr(messageId));
     formatAndPrintDisplay(msg, 2, 0);
+
+    if (messageId == PPMSG_WRONG_PIN_S || messageId == PPMSG_PIN_LAST_TRY || messageId == PPMSG_PIN_BLOCKED || messageId == PPMSG_CARD_BLOCKED) sleep(3);
   }
   return 0;
 }
