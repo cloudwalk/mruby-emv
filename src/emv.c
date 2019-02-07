@@ -341,6 +341,7 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   static mrb_value
 mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
 {
+  mrb_int ret;
   mrb_value process, tags, optional_tags;
 
   mrb_get_args(mrb, "SSS", &process, &tags, &optional_tags);
@@ -351,8 +352,10 @@ mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
   //OSL_Warning("psTags = [%s]", RSTRING_PTR(tags));
   //OSL_Warning("psTagsOpt = [%s]", RSTRING_PTR(optional_tags));
 
-  return mrb_fixnum_value(PP_StartGoOnChip(RSTRING_PTR(process),
-        RSTRING_PTR(tags), RSTRING_PTR(optional_tags)));
+  ret = PP_StartGoOnChip(RSTRING_PTR(process), RSTRING_PTR(tags), RSTRING_PTR(optional_tags));
+  Telium_Ttestall(0, 50);
+
+  return mrb_fixnum_value(ret);
 }
 
   static mrb_value
@@ -366,6 +369,7 @@ mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
   current_klass = klass;
 
   ret = PP_GoOnChip(output, msg);
+  Telium_Ttestall(0, 50);
 
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
