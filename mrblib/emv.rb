@@ -134,6 +134,10 @@ class Platform::EMV
     selected ? selected : -1
   end
 
+  def self.internal_get_pin(msg, inum)
+    FunkyEmv::Ui.display(:emv_enter_pin, :args => [msg], :column => 1, :line => 1)
+  end
+
   def self.internal_text_show(flags, text1, text2)
     if self.text_show_block
       self.text_show_block.call(opts)
