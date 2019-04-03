@@ -125,12 +125,12 @@ class Platform::EMV
     end
   end
 
-  def self.internal_menu_show(opts)
+  def self.internal_menu_show(opts, bc_title = nil)
     selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
       hash[app[0]] = app[1]; hash
     end
     mili = EmvTransaction.timeout * 1000
-    selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
+    selected = menu(@title || bc_title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
     selected ? selected : -1
   end
 
