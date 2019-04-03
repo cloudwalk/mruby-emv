@@ -25,6 +25,10 @@
 #include "ppcomp.h"
 #endif
 
+#ifdef PAX
+#include "ppcomp_ex.h"
+#endif
+
 /*----------------------*/
 /* Flags para DSP_Text  */
 /*----------------------*/
@@ -225,6 +229,65 @@ void bcGetAidData (const char *aid) {
 }
 
 #endif
+
+int APPBC_CALLBACK_iDisplay(char *pszMsg)
+{
+  mrb_value ret;
+  ContextLog(current_mrb, 1, "msg [%s]", pszMsg);
+
+  ret = mrb_funcall(current_mrb, current_klass, "internal_text_show", 3,
+      mrb_nil_value(), mrb_str_new_cstr(current_mrb, pszMsg), mrb_nil_value());
+
+  return 0;
+}
+
+int APPBC_CALLBACK_iDisplayClear(void)
+{
+  ContextLog(current_mrb, 1, "APPBC_CALLBACK_iDisplayClear");
+  display_clear();
+  return 0;
+}
+
+int APPBC_CALLBACK_iGetPIN(char *pszMsg, int iNum)
+{
+	mrb_value ret;
+
+  ContextLog(current_mrb, 1, "internal_get_pin [%s][%d]", pszMsg, iNum);
+
+	ret = mrb_funcall(current_mrb, current_klass, "internal_get_pin", 2,
+			mrb_str_new_cstr(current_mrb, pszMsg), mrb_fixnum_value(iNum));
+
+	return mrb_fixnum(ret);
+}
+
+int APPBC_CALLBACK_iMenu(char *pszTitle, char **pvszItem, int iItem, int iTimeout)
+{
+  char menu_string[200];
+  mrb_value ret;
+  char buf[50];
+  int i = 0;
+
+  memset(menu_string, 0, sizeof(menu_string));
+
+  ContextLog(current_mrb, 1, "title [%s] item [%s] item n [%d] timeout [%d]", pszTitle, pvszItem, iItem, iTimeout);
+
+  for (i = 0; i < iItem; i++) {
+    memset(buf, 0, sizeof(buf));
+    sprintf(&buf[0], "%s\r", i+1, pvszItem[i]);
+    strcat(menu_string, buf);
+  }
+
+  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 2,
+      mrb_str_new_cstr(current_mrb, menu_string), 	mrb_str_new_cstr(current_mrb, pszTitle));
+
+  return mrb_fixnum(ret);
+}
+
+int APP_iTestCancel(void)
+{
+  return 0;
+}
+
   static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 {
@@ -261,7 +324,26 @@ mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
   //OSL_Warning("mrb_emv_s_open: PP_Open = %d", err);
 
   return mrb_fixnum_value(err);
-#else
+#elif PAX
+  mrb_value com;
+	PPInitLibStru stInitLibStru;
+
+  mrb_get_args(mrb, "S", &com);
+
+  current_mrb   = mrb;
+  current_klass = klass;
+
+	memset (&stInitLibStru, '\0', sizeof (PPInitLibStru));
+	stInitLibStru.iSize = sizeof (PPInitLibStru);
+	stInitLibStru.stFuncs.piDisplay = APPBC_CALLBACK_iDisplay;
+	stInitLibStru.stFuncs.piDisplayClear = APPBC_CALLBACK_iDisplayClear;
+	stInitLibStru.stFuncs.piGetPIN = APPBC_CALLBACK_iGetPIN;
+	stInitLibStru.stFuncs.piMenu = APPBC_CALLBACK_iMenu;
+	stInitLibStru.stFuncs.piTestCancel = APP_iTestCancel;
+	PP_iInitLib (&stInitLibStru);
+
+  return mrb_fixnum_value(PP_Open(RSTRING_PTR(com)));
+#else // GERTEC
   mrb_value com;
   DSP_Callback_Stru dsp_st;
 

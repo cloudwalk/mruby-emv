@@ -233,6 +233,8 @@ mrb_pinpad_s_key_test(mrb_state *mrb, mrb_value klass)
 
 #ifdef __FRAMEWORK_TELIUM_PLUS__
   return mrb_fixnum_value(-1);
+#elif PAX
+  return mrb_fixnum_value(-1);
 #else
   return mrb_fixnum_value(GEDI_KMS_KeyPresenceTest(type, operation, index));
 #endif
@@ -248,6 +250,8 @@ mrb_pinpad_s__key_kcv(mrb_state *mrb, mrb_value klass)
   mrb_get_args(mrb, "iii", &type, &operation, &index);
 
 #ifdef __FRAMEWORK_TELIUM_PLUS__
+  ret = -1;
+#elif PAX
   ret = -1;
 #else
   ret = GEDI_KMS_KCVGet(type, operation, index, &kcv);
@@ -270,6 +274,8 @@ mrb_pinpad_s__key_ksn(mrb_state *mrb, mrb_value klass)
   mrb_get_args(mrb, "iii", &type, &operation, &index);
 
 #ifdef __FRAMEWORK_TELIUM_PLUS__
+  ret = -1;
+#elif PAX
   ret = -1;
 #else
   ret = GEDI_KMS_DUKPTKSNGet(type, operation, index, &ksn);
