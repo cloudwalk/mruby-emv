@@ -87,6 +87,7 @@
 mrb_state *current_mrb;
 mrb_value current_klass;
 
+#ifdef __FRAMEWORK_TELIUM_PLUS__
 extern int getChar(int timeout);
 
 int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu[], unsigned int nItems, unsigned int timeout) {
@@ -223,6 +224,7 @@ void bcGetAidData (const char *aid) {
   //OSL_Warning("bcGetAidData");
 }
 
+#endif
   static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 {
@@ -311,7 +313,9 @@ mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 
   ret = PP_StartGetCard(RSTRING_PTR(value));
   //OSL_Warning("mrb_emv_s_start_get_card: PP_StartGetCard = %d", ret);
+#ifdef __FRAMEWORK_TELIUM_PLUS__
   Telium_Ttestall(0, 50);
+#endif
   return mrb_fixnum_value(ret);
 }
 
@@ -326,7 +330,9 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
 
   //OSL_Warning("mrb_emv_s_start_get_card: PP_GetCard [%s][%s]", output, msg);
   ret = PP_GetCard(output, msg);
+#ifdef __FRAMEWORK_TELIUM_PLUS__
   Telium_Ttestall(0, 50);
+#endif
   //OSL_Warning("mrb_emv_s_get_card: PP_GetCard = %d", ret);
 
   array  = mrb_ary_new(mrb);
@@ -357,7 +363,9 @@ mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
   //OSL_Warning("psTagsOpt = [%s]", RSTRING_PTR(optional_tags));
 
   ret = PP_StartGoOnChip(RSTRING_PTR(process), RSTRING_PTR(tags), RSTRING_PTR(optional_tags));
+#ifdef __FRAMEWORK_TELIUM_PLUS__
   Telium_Ttestall(0, 50);
+#endif
 
   return mrb_fixnum_value(ret);
 }
@@ -373,7 +381,9 @@ mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
   current_klass = klass;
 
   ret = PP_GoOnChip(output, msg);
+#ifdef __FRAMEWORK_TELIUM_PLUS__
   Telium_Ttestall(0, 50);
+#endif
 
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));

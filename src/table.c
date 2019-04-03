@@ -10,9 +10,8 @@
 #include "mruby/string.h"
 #include "mruby/hash.h"
 
-#include <OSL_Logger.h>
-
 #ifdef __FRAMEWORK_TELIUM_PLUS__
+#include <OSL_Logger.h>
 #include "bc.h"
 #else
 #include "ppcomp.h"
