@@ -125,14 +125,6 @@ class Platform::EMV
     end
   end
 
-  def self.fiber_resume
-    ContextLog.info "Fiber #{self.fiber}"
-    if self.fiber
-      self.use_fiber = false
-      self.fiber.resume
-    end
-  end
-
   def self.internal_menu_show(opts)
     selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
       hash[app[0]] = app[1]; hash
