@@ -542,7 +542,7 @@ mrb_emv_s_timestamp(mrb_state *mrb, mrb_value klass)
 }
 
   void
-mrb_emv_init(mrb_state* mrb)
+mrb_bc_emv_init(mrb_state* mrb)
 {
   struct RClass *plt, *emv;
 

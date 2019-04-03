@@ -55,7 +55,7 @@ mrb_emv_table_s_change(mrb_state *mrb, mrb_value klass)
 }
 
 void
-mrb_table_init(mrb_state* mrb)
+mrb_bc_table_init(mrb_state* mrb)
 {
   struct RClass *plt, *emv, *table;
 

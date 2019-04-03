@@ -289,7 +289,7 @@ mrb_pinpad_s__key_ksn(mrb_state *mrb, mrb_value klass)
 }
 
 void
-mrb_pinpad_init(mrb_state* mrb)
+mrb_bc_pinpad_init(mrb_state* mrb)
 {
   struct RClass *plt, *emv, *pinpad;
 
