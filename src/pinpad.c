@@ -293,7 +293,7 @@ mrb_bc_pinpad_init(mrb_state* mrb)
 {
   struct RClass *plt, *emv, *pinpad;
 
-  plt    = mrb_class_get(mrb, "Platform");
+  plt    = mrb_class_get(mrb, "EMVPlatform");
   emv    = mrb_class_get_under(mrb, plt, "EMV");
   pinpad = mrb_define_class_under(mrb, emv, "Pinpad", mrb->object_class);
 

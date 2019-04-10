@@ -59,7 +59,7 @@ mrb_bc_table_init(mrb_state* mrb)
 {
   struct RClass *plt, *emv, *table;
 
-  plt   = mrb_class_get(mrb, "Platform");
+  plt   = mrb_class_get(mrb, "EMVPlatform");
   emv   = mrb_class_get_under(mrb, plt, "EMV");
   table = mrb_define_class_under(mrb, emv, "Table", mrb->object_class);
 

@@ -1,4 +1,4 @@
-class Platform::EMV
+class EMVPlatform::EMV
   PPCOMP_OK            = 0
   PPCOMP_PROCESSING    = 1
   PPCOMP_NOTIFY        = 2
@@ -58,7 +58,7 @@ class Platform::EMV
   PPCOMP_VCINVCURR     = 75
   PPCOMP_ERRFALLBACK   = 76
 
-  #TODO Platform custom
+  #TODO EMVPlatform custom
 
   # Possible flags to internal_text_show
   DSP_F_BHAVMASK  = 0x00000F00
@@ -110,9 +110,9 @@ class Platform::EMV
   def self.init(port = "01")
     # TODO Scalone: Remove it from here, mrbgems shouldn't know DaFunk exists.
     include DaFunk::Helper
-    ret = Platform::EMV.open(port)
-    Platform::EMV::Pinpad.init
-    @version = Platform::EMV::Pinpad.firmaware_version.to_s
+    ret = EMVPlatform::EMV.open(port)
+    EMVPlatform::EMV::Pinpad.init
+    @version = EMVPlatform::EMV::Pinpad.firmaware_version.to_s
     ret
   end
 

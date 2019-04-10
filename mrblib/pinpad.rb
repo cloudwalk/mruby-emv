@@ -1,4 +1,4 @@
-class Platform
+class EMVPlatform
   class EMV
     class Pinpad
       class << self
@@ -13,7 +13,7 @@ class Platform
         "PINBLOCK"    => ""
       }
 
-      #TODO Platform custom
+      #TODO EMVPlatform custom
       GEDI_KMS_KEYTYPE_DES        = 0
       GEDI_KMS_KEYTYPE_TDES       = 1
       GEDI_KMS_KEYTYPE_DUKPT_DES  = 2

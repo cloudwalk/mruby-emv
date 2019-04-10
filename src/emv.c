@@ -546,7 +546,7 @@ mrb_bc_emv_init(mrb_state* mrb)
 {
   struct RClass *plt, *emv;
 
-  plt = mrb_class_get(mrb, "Platform");
+  plt = mrb_define_class(mrb, "EMVPlatform", mrb->object_class);
   emv = mrb_define_class_under(mrb, plt, "EMV",  mrb->object_class);
 
   /*Control*/
