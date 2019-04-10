@@ -233,7 +233,6 @@ void bcGetAidData (const char *aid) {
 int APPBC_CALLBACK_iDisplay(char *pszMsg)
 {
   mrb_value ret;
-  ContextLog(current_mrb, 1, "msg [%s]", pszMsg);
 
   ret = mrb_funcall(current_mrb, current_klass, "internal_text_show", 3,
       mrb_nil_value(), mrb_str_new_cstr(current_mrb, pszMsg), mrb_nil_value());
@@ -243,8 +242,6 @@ int APPBC_CALLBACK_iDisplay(char *pszMsg)
 
 int APPBC_CALLBACK_iDisplayClear(void)
 {
-  ContextLog(current_mrb, 1, "APPBC_CALLBACK_iDisplayClear");
-  display_clear();
   return 0;
 }
 
@@ -268,8 +265,6 @@ int APPBC_CALLBACK_iMenu(char *pszTitle, char **pvszItem, int iItem, int iTimeou
   int i = 0;
 
   memset(menu_string, 0, sizeof(menu_string));
-
-  ContextLog(current_mrb, 1, "title [%s] item [%s] item n [%d] timeout [%d]", pszTitle, pvszItem, iItem, iTimeout);
 
   for (i = 0; i < iItem; i++) {
     memset(buf, 0, sizeof(buf));
