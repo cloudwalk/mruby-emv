@@ -129,29 +129,63 @@ class EMVPlatform::EMV
     selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
       hash[app[0]] = app[1]; hash
     end
-    mili = EmvTransaction.timeout * 1000
-    selected = menu(@title || bc_title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
-    selected ? selected : -1
+    selected ? selected+1 : -1
   end
 
   def self.internal_get_pin(msg, inum)
-    FunkyEmv::Ui.display(:emv_enter_pin, :args => [msg], :column => 1, :line => 1)
+    amount = msg.split("\n").reject(&:empty?)[0].to_s
+    amount["VALOR:"] = "" if amount.include?("VALOR:")
+    if inum > 0
+      Device::Display.print_line("*" * inum, STDOUT.x+3, 1)
+    else
+      FunkyEmv::Ui.display(:emv_enter_pin, :args => [amount.strip], :column => 1, :line => 1)
+    end
+    0
+  end
+
+  def self.pax_display(text1)
+    text = text1.to_s.downcase
+    if text.include?("atualizando") && text.include?("tabelas")
+    elsif text.include? "processando"
+      FunkyEmv::Ui.display(:emv_processing, :line => 2, :column => 1)
+    elsif text.include?("selecionado") && (text.include?("debito") || text.include?("maestro") || text.include?("electron") || text.include?("debit"))
+      FunkyEmv::Ui.display(:emv_selected_debit)
+    elsif text.include?("selecionado") && (text.include?("credito") || text.include?("credit"))
+      FunkyEmv::Ui.display(:emv_selected_credit)
+    elsif text.include? "retire"
+      FunkyEmv::Ui.display(:emv_remove_card, :line => 2)
+    else
+      unless text1.to_s.strip.empty?
+        Device::Display.clear
+        puts text1
+      end
+    end
+    true
   end
 
   def self.internal_text_show(flags, text1, text2)
     if self.text_show_block
       self.text_show_block.call(opts)
     else
-      if ! text1.to_s.empty?
-        return if text1[0..7] == "\rRETIRE\r"
-        Device::Display.clear
-        #p "Text1 [#{text1.inspect}]"
-        puts(*text1.split("\r")) if text1
+      case Device::System.brand
+      when "pax"
+        pax_display(text1)
+      when "gertec"
+        if ! text1.to_s.empty?
+          return if text1[0..7] == "\rRETIRE\r"
+          Device::Display.clear
+          #p "Text1 [#{text1.inspect}]"
+          puts(*text1.split("\r")) if text1
 
-        if (flags & DSP_F_DATAENTRY != 0)
-          #p "Text2 [#{text2.inspect}]"
-          puts(*text2.split("\r")) if text2
+          if (flags & DSP_F_DATAENTRY != 0)
+            #p "Text2 [#{text2.inspect}]"
+            puts(*text2.split("\r")) if text2
+          end
         end
+      else
+        Device::Display.clear
+        puts(*text1.split("\r")) if text1
+        puts(*text2.split("\r")) if text2
       end
     end
   end

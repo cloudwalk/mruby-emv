@@ -245,14 +245,57 @@ int APPBC_CALLBACK_iDisplayClear(void)
   return 0;
 }
 
+int iDisplayAsteriskSize = 0;
+
+static int getAsteriskSize(void)
+{
+  char model[64]="\0";
+
+  if (iDisplayAsteriskSize == 0) {
+    OsRegGetValue("ro.fac.mach", model);
+    if (strcmp(model, "d200") == 0 || strcmp(model, "d195") == 0)
+      iDisplayAsteriskSize = 24;
+    else
+      iDisplayAsteriskSize = 16;
+  }
+  return iDisplayAsteriskSize;
+}
+
+int line_width;
+int line_height;
+
+int fix_display_x(int x)
+{
+  return x * line_width;
+}
+
+int fix_display_y(int y)
+{
+  return y * line_height;
+}
+
+#define PAX_PED_ASTERISK_ALIGN_LEFT		0
+
 int APPBC_CALLBACK_iGetPIN(char *pszMsg, int iNum)
 {
 	mrb_value ret;
+  mrb_int column, line;
+  mrb_value screen, pax;
 
-  ContextLog(current_mrb, 1, "internal_get_pin [%s][%d]", pszMsg, iNum);
+  pax    = mrb_const_get(current_mrb, mrb_obj_value(current_mrb->object_class),
+      mrb_intern_lit(current_mrb, "PAX"));
+  screen = mrb_const_get(current_mrb, mrb_obj_value(current_mrb->object_class),
+      mrb_intern_lit(current_mrb, "STDOUT"));
+  ret    = mrb_funcall(current_mrb, current_klass, "internal_get_pin", 2,
+      mrb_str_new_cstr(current_mrb, pszMsg), mrb_fixnum_value(iNum));
 
-	ret = mrb_funcall(current_mrb, current_klass, "internal_get_pin", 2,
-			mrb_str_new_cstr(current_mrb, pszMsg), mrb_fixnum_value(iNum));
+  column = mrb_fixnum(mrb_funcall(current_mrb, screen, "x", 0));
+  line   = mrb_fixnum(mrb_funcall(current_mrb, screen, "y", 0));
+
+  // 15024 - RGB(62, 87, 128)
+  // 0 - RGB(0,0,0)
+  OsPedSetAsteriskLayout(fix_display_x(column) + 1, fix_display_y(line) + line_height, getAsteriskSize(),
+      0, PAX_PED_ASTERISK_ALIGN_LEFT);
 
 	return mrb_fixnum(ret);
 }
@@ -268,12 +311,12 @@ int APPBC_CALLBACK_iMenu(char *pszTitle, char **pvszItem, int iItem, int iTimeou
 
   for (i = 0; i < iItem; i++) {
     memset(buf, 0, sizeof(buf));
-    sprintf(&buf[0], "%s\r", i+1, pvszItem[i]);
+    sprintf(&buf[0], "%s\r", pvszItem[i]);
     strcat(menu_string, buf);
   }
 
   ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 2,
-      mrb_str_new_cstr(current_mrb, menu_string), 	mrb_str_new_cstr(current_mrb, pszTitle));
+      mrb_str_new_cstr(current_mrb, menu_string),	mrb_str_new_cstr(current_mrb, pszTitle));
 
   return mrb_fixnum(ret);
 }
