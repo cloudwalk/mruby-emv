@@ -1,4 +1,4 @@
-class Platform::EMV
+class EMVPlatform::EMV
   PPCOMP_OK            = 0
   PPCOMP_PROCESSING    = 1
   PPCOMP_NOTIFY        = 2
@@ -58,7 +58,7 @@ class Platform::EMV
   PPCOMP_VCINVCURR     = 75
   PPCOMP_ERRFALLBACK   = 76
 
-  #TODO Platform custom
+  #TODO EMVPlatform custom
 
   # Possible flags to internal_text_show
   DSP_F_BHAVMASK  = 0x00000F00
@@ -99,6 +99,7 @@ class Platform::EMV
 
   class << self
     attr_reader :version, :menu_title_block, :menu_show_block, :text_show_block
+    attr_accessor :fiber, :use_fiber
   end
 
   def self.version
@@ -109,9 +110,9 @@ class Platform::EMV
   def self.init(port = "01")
     # TODO Scalone: Remove it from here, mrbgems shouldn't know DaFunk exists.
     include DaFunk::Helper
-    ret = Platform::EMV.open(port)
-    Platform::EMV::Pinpad.init
-    @version = Platform::EMV::Pinpad.firmaware_version.to_s
+    ret = EMVPlatform::EMV.open(port)
+    EMVPlatform::EMV::Pinpad.init
+    @version = EMVPlatform::EMV::Pinpad.firmaware_version.to_s
     ret
   end
 
@@ -124,33 +125,96 @@ class Platform::EMV
     end
   end
 
-  def self.internal_menu_show(opts)
-    if self.menu_show_block
-      self.menu_show_block.call(opts)
+  def self.emv_application_name_image_ready?(list = nil)
+    (list.nil? || list.size == 2) && DaFunk::ParamsDat.file["emv_application_name_image"] == "1" &&
+      FunkyEmv::Ui.bmp_exists?(:emv_selection_credit_debit) &&
+      FunkyEmv::Ui.bmp_exists?(:emv_selected_credit) &&
+      FunkyEmv::Ui.bmp_exists?(:emv_selected_debit)
+  end
+
+  def self.app_image_selection(list)
+    list.each_with_index.inject({}) do |hash, app|
+      index = app[1]
+      name  = app[0].to_s.downcase
+      if name.include?("debito") || name.include?("maestro") || name.include?("electron") || name.include?("debit")
+        hash[1] = index
+      elsif name.include?("credito") || name.include?("credit")
+        hash[0] = index
+      end
+      hash
+    end
+  end
+
+  def self.internal_menu_show(opts, bc_title = nil)
+    list = opts.split("\r")
+    if emv_application_name_image_ready?(list)
+      selected = menu_image(FunkyEmv::Ui.bmp(:emv_selection_credit_debit), app_image_selection(list),
+                 timeout: (EmvTransaction.timeout * 1000))
     else
-      selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
+      selection = list.each_with_index.inject({}) do |hash, app|
         hash[app[0]] = app[1]; hash
       end
       mili = EmvTransaction.timeout * 1000
-      selected = menu(@title || I18n.t(:emv_select_application), selection, timeout: mili, number: true)
-      selected ? selected : -1
+      selected = menu(@title || bc_title || I18n.t(:emv_select_application),
+                      selection, timeout: mili, number: true)
     end
+    selected ? selected+1 : -1
+  end
+
+  def self.internal_get_pin(msg, inum)
+    amount = msg.split("\n").reject(&:empty?)[0].to_s
+    amount["VALOR:"] = "" if amount.include?("VALOR:")
+    if inum > 0
+      Device::Display.print_line("*" * inum, STDOUT.x+3, 1)
+    else
+      FunkyEmv::Ui.display(:emv_enter_pin, :args => [amount.strip], :column => 1, :line => 1)
+    end
+    0
+  end
+
+  def self.pax_display(text1)
+    text = text1.to_s.downcase
+    if text.include?("atualizando") && text.include?("tabelas")
+    elsif text.include? "processando"
+      FunkyEmv::Ui.display(:emv_processing, :line => 2, :column => 1)
+    elsif text.include?("selecionado") && (text.include?("debito") || text.include?("maestro") || text.include?("electron") || text.include?("debit"))
+      FunkyEmv::Ui.display(:emv_selected_debit)
+    elsif text.include?("selecionado") && (text.include?("credito") || text.include?("credit"))
+      FunkyEmv::Ui.display(:emv_selected_credit)
+    elsif text.include? "retire"
+      FunkyEmv::Ui.display(:emv_remove_card, :line => 2)
+    else
+      unless text1.to_s.strip.empty?
+        Device::Display.clear
+        puts text1
+      end
+    end
+    true
   end
 
   def self.internal_text_show(flags, text1, text2)
     if self.text_show_block
       self.text_show_block.call(opts)
     else
-      if ! text1.to_s.empty?
-        return if text1[0..7] == "\rRETIRE\r"
-        Device::Display.clear
-        #p "Text1 [#{text1.inspect}]"
-        puts(*text1.split("\r")) if text1
+      case Device::System.brand
+      when "pax"
+        pax_display(text1)
+      when "gertec"
+        if ! text1.to_s.empty?
+          return if text1[0..7] == "\rRETIRE\r"
+          Device::Display.clear
+          #p "Text1 [#{text1.inspect}]"
+          puts(*text1.split("\r")) if text1
 
-        if (flags & DSP_F_DATAENTRY != 0)
-          #p "Text2 [#{text2.inspect}]"
-          puts(*text2.split("\r")) if text2
+          if (flags & DSP_F_DATAENTRY != 0)
+            #p "Text2 [#{text2.inspect}]"
+            puts(*text2.split("\r")) if text2
+          end
         end
+      else
+        Device::Display.clear
+        puts(*text1.split("\r")) if text1
+        puts(*text2.split("\r")) if text2
       end
     end
   end

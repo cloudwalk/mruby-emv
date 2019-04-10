@@ -9,7 +9,25 @@
 #include "mruby/array.h"
 #include "mruby/string.h"
 #include "mruby/hash.h"
+
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+#include "bc.h"
+#include <sdk_tplus.h>
+#include <OSL_Logger.h>
+#include <pinpadEmv.h>
+#include <larlib/log.h>
+#include <abecs.h>
+#include <pinpadLog.h>
+#include <goalDisplay.h>
+#define PPCOMP_OK PP_OK
+#define PPCOMP_NOTIFY PP_NOTIFY
+#else
 #include "ppcomp.h"
+#endif
+
+#ifdef PAX
+#include "ppcomp_ex.h"
+#endif
 
 /*----------------------*/
 /* Flags para DSP_Text  */
@@ -73,53 +91,297 @@
 mrb_state *current_mrb;
 mrb_value current_klass;
 
-void GDSP_Clear (void)
-{
-  mrb_value display;
-  struct RClass *device;
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+extern int getChar(int timeout);
 
-  device  = mrb_class_get(current_mrb, "Device");
-  display = mrb_const_get(current_mrb, mrb_obj_value(device), mrb_intern_lit(current_mrb, "Display"));
+int bcShowMenu (ppMessageType_t titleId, const char *titleText, const char *menu[], unsigned int nItems, unsigned int timeout) {
+  int ch, i = 0, iRet = 1;
+  mrb_value ret;
+  char menu_string[100];
+  char buf[50];
 
-  mrb_funcall(current_mrb, display, "clear", 0);
+  memset(menu_string, 0, sizeof(menu_string));
+  strncat(menu_string, "SELECIONE:\n", 11);
+  for (i = 0; i < nItems; i++) {
+    memset(buf, 0, sizeof(buf));
+    sprintf(&buf[0], "%d. %s\n", i+1, menu[i]);
+    strcat(menu_string, buf);
+  }
+
+  formatAndPrintDisplay(menu_string, 1, 0);
+
+  do ch = getChar(60000);
+  while (ch == GL_RESULT_TIMEOUT);
+
+  if ('1' <= ch && ch <= '9')
+    iRet = ch - '1';
+  else
+    iRet = BASE_ERR_CANCEL;
+
+  // ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1, mrb_str_new_cstr(current_mrb, menu_string));
+  //OSL_Warning("bcShowMenu:result = %d", iRet);
+
+  return iRet;
 }
 
-int GDSP_iMenuStart (const char *pszTitle, unsigned long *pulFlags)
+static const char *getMessageStr(ppMessageType_t messageId) {
+  switch (messageId) {
+    case PPMSG_TEXT_S: return NULL;
+    case PPMSG_PROCESSING: return "PROCESSANDO";
+    case PPMSG_INSERT_SWIPE_CARD: return "INSIRA OU PASSE O CARTAO";
+    case PPMSG_TAP_INSERT_SWIPE_CARD: return "APROXIME, INSIRA\nOU PASSE O CARTAO";
+    case PPMSG_SELECT: return "SELECIONE";
+    case PPMSG_SELECTED_S: return "SELECIONADO:\n%s";
+    case PPMSG_INVALID_APP: return "APLICACAO INVALIDA";
+    case PPMSG_WRONG_PIN_S: return "PIN ERRADO\n%s TENTATIVAS";
+    case PPMSG_PIN_LAST_TRY: return "ULTIMA TENTATIVA";
+    case PPMSG_PIN_BLOCKED: return "PIN BLOQUEADO";
+    case PPMSG_PIN_VERIFIED: return NULL;
+    case PPMSG_CARD_BLOCKED: return "CARTAO BLOQUEADO";
+    case PPMSG_REMOVE_CARD: return NULL;
+    case PPMSG_UPDATING_TABLES: return NULL;
+    case PPMSG_UPDATING_RECORD: return NULL;
+    case PPMSG_SECOND_TAP: return "RE-APROXIME O CARTAO";
+    default: NULL;
+  }
+}
+
+int bcShowMessage (ppMessageType_t messageId, const char *messageText) {
+  char msg[256]={0x00};
+
+  //OSL_Warning("bcShowMessage [%s] [%d] [%s]", getMessageStr(messageId), messageId, messageText);
+
+  if (getMessageStr(messageId)) {
+    goalClearScreen(TRUE);
+
+    if (messageText)
+      sprintf(msg, getMessageStr(messageId), messageText);
+    else
+      strcpy(msg, getMessageStr(messageId));
+    formatAndPrintDisplay(msg, 2, 0);
+
+    if (messageId == PPMSG_WRONG_PIN_S || messageId == PPMSG_PIN_LAST_TRY || messageId == PPMSG_PIN_BLOCKED || messageId == PPMSG_CARD_BLOCKED) sleep(3);
+  }
+  return 0;
+}
+
+void showPinImage(void) {
+  long fileSize = 0;
+  FILE *bmpImage = NULL;
+  unsigned char *imgBuffer;
+
+  // Open BPM image
+  bmpImage = fopen("/home/APPS/ohyeah/shared/emv_enter_pin.bmp", "r");
+
+  if (bmpImage != NULL) {
+    // Get's the BMP lenght
+    fseek(bmpImage, 0L, SEEK_END);
+    fileSize = ftell(bmpImage);
+    fseek(bmpImage, 0L, SEEK_SET);
+
+    // Check if the size is higher than 0
+    if (fileSize <= 0) {
+      return;
+    }
+    // Create buffer to load the image
+    imgBuffer = (char *) malloc(fileSize);
+    // Load BMP image
+    fread(imgBuffer, fileSize, 1, bmpImage);
+    // Shows BPM into the screen
+    imgDisplay(imgBuffer, fileSize);
+    // Release memory
+    free(imgBuffer);
+    fclose(bmpImage);
+  }
+}
+
+int bcPinEntry (const char *message, unsigned long long amount, unsigned int digits) {
+  char pin[12+1]={0x00};
+  char msg[256]={0x00};
+
+  //OSL_Warning("bcPinEntry [%s][%llu][%d]", message, amount, digits);
+
+  // goalClearScreen(TRUE);
+  showPinImage();
+
+  memcpy(pin, "************", digits);
+
+  if (message == NULL) {
+    sprintf(msg, "VALOR: %llu,%02llu\nSENHA: %s", (amount / 100), (amount % 100), pin);
+  } else {
+    sprintf(msg, "%s%s", message, pin);
+  }
+
+  formatAndPrintDisplay(msg, 2, 0);
+  return 0;
+}
+
+void bcSetLeds (ppLeds_t leds) {
+  //OSL_Warning("bcSetLeds");
+}
+
+void bcBeep(ppBeepType_t beepType) {
+  //OSL_Warning("bcBeep");
+}
+
+void bcGetAidData (const char *aid) {
+  //OSL_Warning("bcGetAidData");
+}
+
+#endif
+
+int APPBC_CALLBACK_iDisplay(char *pszMsg)
 {
   mrb_value ret;
 
-  *pulFlags = DSP_F_BLOCK;
+  ret = mrb_funcall(current_mrb, current_klass, "internal_text_show", 3,
+      mrb_nil_value(), mrb_str_new_cstr(current_mrb, pszMsg), mrb_nil_value());
 
-  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_title", 1,
-      mrb_str_new(current_mrb, pszTitle, 32));
+  return 0;
+}
+
+int APPBC_CALLBACK_iDisplayClear(void)
+{
+  return 0;
+}
+
+int iDisplayAsteriskSize = 0;
+
+static int getAsteriskSize(void)
+{
+  char model[64]="\0";
+
+  if (iDisplayAsteriskSize == 0) {
+    OsRegGetValue("ro.fac.mach", model);
+    if (strcmp(model, "d200") == 0 || strcmp(model, "d195") == 0)
+      iDisplayAsteriskSize = 24;
+    else
+      iDisplayAsteriskSize = 16;
+  }
+  return iDisplayAsteriskSize;
+}
+
+int line_width;
+int line_height;
+
+int fix_display_x(int x)
+{
+  return x * line_width;
+}
+
+int fix_display_y(int y)
+{
+  return y * line_height;
+}
+
+#define PAX_PED_ASTERISK_ALIGN_LEFT		0
+
+int APPBC_CALLBACK_iGetPIN(char *pszMsg, int iNum)
+{
+	mrb_value ret;
+  mrb_int column, line;
+  mrb_value screen, pax;
+
+  pax    = mrb_const_get(current_mrb, mrb_obj_value(current_mrb->object_class),
+      mrb_intern_lit(current_mrb, "PAX"));
+  screen = mrb_const_get(current_mrb, mrb_obj_value(current_mrb->object_class),
+      mrb_intern_lit(current_mrb, "STDOUT"));
+  ret    = mrb_funcall(current_mrb, current_klass, "internal_get_pin", 2,
+      mrb_str_new_cstr(current_mrb, pszMsg), mrb_fixnum_value(iNum));
+
+  column = mrb_fixnum(mrb_funcall(current_mrb, screen, "x", 0));
+  line   = mrb_fixnum(mrb_funcall(current_mrb, screen, "y", 0));
+
+  // 15024 - RGB(62, 87, 128)
+  // 0 - RGB(0,0,0)
+  OsPedSetAsteriskLayout(fix_display_x(column) + 1, fix_display_y(line) + line_height, getAsteriskSize(),
+      0, PAX_PED_ASTERISK_ALIGN_LEFT);
+
+	return mrb_fixnum(ret);
+}
+
+int APPBC_CALLBACK_iMenu(char *pszTitle, char **pvszItem, int iItem, int iTimeout)
+{
+  char menu_string[200];
+  mrb_value ret;
+  char buf[50];
+  int i = 0;
+
+  memset(menu_string, 0, sizeof(menu_string));
+
+  for (i = 0; i < iItem; i++) {
+    memset(buf, 0, sizeof(buf));
+    sprintf(&buf[0], "%s\r", pvszItem[i]);
+    strcat(menu_string, buf);
+  }
+
+  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 2,
+      mrb_str_new_cstr(current_mrb, menu_string),	mrb_str_new_cstr(current_mrb, pszTitle));
 
   return mrb_fixnum(ret);
 }
 
-int GDSP_iMenuShow (unsigned long ulFlags, const char *pszOpts, int iOptSel)
+int APP_iTestCancel(void)
 {
-  mrb_value ret;
-
-  ret = mrb_funcall(current_mrb, current_klass, "internal_menu_show", 1,
-      mrb_str_new_cstr(current_mrb, pszOpts));
-
-  return mrb_fixnum(ret);
-}
-
-void GDSP_Text (unsigned long ulFlags, const char *pszTxt1, const char *pszTxt2)
-{
-  mrb_value text1, text2;
-
-  text1 = (pszTxt1) ? mrb_str_new_cstr(current_mrb, pszTxt1) : mrb_nil_value();
-  text2 = (pszTxt2) ? mrb_str_new_cstr(current_mrb, pszTxt2) : mrb_nil_value();
-
-  mrb_funcall(current_mrb, current_klass, "internal_text_show", 3,
-      mrb_fixnum_value(ulFlags), text1, text2);
+  return 0;
 }
 
   static mrb_value
 mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
 {
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  current_mrb   = mrb;
+  current_klass = klass;
+
+  int err = PP_SetCallbacks((ppCallbacks_t) {
+    .callbackVersion = PP_CALLBACK_VERSION,
+    .showMenu = bcShowMenu,
+    .showMessage = bcShowMessage,
+    .showPinEntry = bcPinEntry,
+    .setLeds = bcSetLeds
+    // .setLeds = bcSetLeds,
+    // .beep = bcBeep,
+    // .getAidData = bcGetAidData
+  });
+  //OSL_Warning("mrb_emv_s_open: PP_SetCallbacks = %d", err);
+
+  // Ativa os canais de log. A constante 0x8F00 Ã© o SAP usado no trace.
+  logSetChannels(LOG_ALL_CHANNELS, 1, &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  logSetChannels(0, 1, LOG_DEBUG, &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  logSetChannels(LOG_CH_BASE, 1, LOG_DEBUG, &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  abecsLogSetChannels(LOGCH_ABECS, LOGCH_ABECS_COUNT, LOG_DEBUG,
+  &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  pinpadLogSetChannels(LOGCH_PINPAD, LOGCH_PINPAD_COUNT, LOG_DEBUG,
+  &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+  pinpadLogSetChannels(LOGCH_PINPAD_EWL_START, LOGCH_PINPAD_EWL_COUNT, LOG_DEBUG,
+  &logWriteTeliumTrace, &logDumpFormattedAscii, (void *) 0x8F00);
+
+  //OSL_Warning("Liga os logs da BC");
+
+  err = PP_Open();
+  //OSL_Warning("mrb_emv_s_open: PP_Open = %d", err);
+
+  return mrb_fixnum_value(err);
+#elif PAX
+  mrb_value com;
+	PPInitLibStru stInitLibStru;
+
+  mrb_get_args(mrb, "S", &com);
+
+  current_mrb   = mrb;
+  current_klass = klass;
+
+	memset (&stInitLibStru, '\0', sizeof (PPInitLibStru));
+	stInitLibStru.iSize = sizeof (PPInitLibStru);
+	stInitLibStru.stFuncs.piDisplay = APPBC_CALLBACK_iDisplay;
+	stInitLibStru.stFuncs.piDisplayClear = APPBC_CALLBACK_iDisplayClear;
+	stInitLibStru.stFuncs.piGetPIN = APPBC_CALLBACK_iGetPIN;
+	stInitLibStru.stFuncs.piMenu = APPBC_CALLBACK_iMenu;
+	stInitLibStru.stFuncs.piTestCancel = APP_iTestCancel;
+	PP_iInitLib (&stInitLibStru);
+
+  return mrb_fixnum_value(PP_Open(RSTRING_PTR(com)));
+#else // GERTEC
   mrb_value com;
   DSP_Callback_Stru dsp_st;
 
@@ -138,15 +400,19 @@ mrb_emv_s_open(mrb_state *mrb, mrb_value klass)
   PP_DspCallbacks(&dsp_st);
 
   return mrb_fixnum_value(PP_Open(RSTRING_PTR(com)));
+#endif
 }
 
   static mrb_value
 mrb_emv_s_close(mrb_state *mrb, mrb_value klass)
 {
+  int err;
   mrb_value msg;
   mrb_get_args(mrb, "S", &msg);
 
-  return mrb_fixnum_value(PP_Close(RSTRING_PTR(msg)));
+  err = PP_Close(RSTRING_PTR(msg));
+  //OSL_Warning("mrb_emv_s_close: PP_Close = %d", err);
+  return mrb_fixnum_value(err);
 }
 
   static mrb_value
@@ -159,12 +425,18 @@ mrb_emv_s_abort(mrb_state *mrb, mrb_value klass)
 mrb_emv_s_start_get_card(mrb_state *mrb, mrb_value klass)
 {
   mrb_value value;
-  OUTPUT out[11]={0x00};
   mrb_int ret;
+
+  //OSL_Warning("mrb_emv_s_start_get_card");
 
   mrb_get_args(mrb, "S", &value);
 
-  return mrb_fixnum_value(PP_StartGetCard(RSTRING_PTR(value)));
+  ret = PP_StartGetCard(RSTRING_PTR(value));
+  //OSL_Warning("mrb_emv_s_start_get_card: PP_StartGetCard = %d", ret);
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  Telium_Ttestall(0, 50);
+#endif
+  return mrb_fixnum_value(ret);
 }
 
   static mrb_value
@@ -174,7 +446,14 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
   mrb_value array;
   mrb_int ret;
 
+  //OSL_Warning("mrb_emv_s_get_card");
+
+  //OSL_Warning("mrb_emv_s_start_get_card: PP_GetCard [%s][%s]", output, msg);
   ret = PP_GetCard(output, msg);
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  Telium_Ttestall(0, 50);
+#endif
+  //OSL_Warning("mrb_emv_s_get_card: PP_GetCard = %d", ret);
 
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
@@ -184,18 +463,31 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
     mrb_ary_push(mrb, array, mrb_nil_value());
   if (ret == PPCOMP_NOTIFY) mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, msg));
 
+  //OSL_Warning("/mrb_emv_s_get_card");
+
   return array;
 }
 
   static mrb_value
 mrb_emv_s_start_go_on_chip(mrb_state *mrb, mrb_value klass)
 {
+  mrb_int ret;
   mrb_value process, tags, optional_tags;
 
   mrb_get_args(mrb, "SSS", &process, &tags, &optional_tags);
 
-  return mrb_fixnum_value(PP_StartGoOnChip(RSTRING_PTR(process),
-        RSTRING_PTR(tags), RSTRING_PTR(optional_tags)));
+  //OSL_Warning("[mrb_emv_s_start_go_on_chip]", process);
+
+  //OSL_Warning("psInput = [%s]", RSTRING_PTR(process));
+  //OSL_Warning("psTags = [%s]", RSTRING_PTR(tags));
+  //OSL_Warning("psTagsOpt = [%s]", RSTRING_PTR(optional_tags));
+
+  ret = PP_StartGoOnChip(RSTRING_PTR(process), RSTRING_PTR(tags), RSTRING_PTR(optional_tags));
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  Telium_Ttestall(0, 50);
+#endif
+
+  return mrb_fixnum_value(ret);
 }
 
   static mrb_value
@@ -209,6 +501,9 @@ mrb_emv_s_go_on_chip(mrb_state *mrb, mrb_value klass)
   current_klass = klass;
 
   ret = PP_GoOnChip(output, msg);
+#ifdef __FRAMEWORK_TELIUM_PLUS__
+  Telium_Ttestall(0, 50);
+#endif
 
   array  = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
@@ -231,6 +526,8 @@ mrb_emv_s_finish_chip(mrb_state *mrb, mrb_value klass)
   mrb_get_args(mrb, "SS", &finish, &tags);
 
   ret = PP_FinishChip(RSTRING_PTR(finish), RSTRING_PTR(tags), output);
+
+  //OSL_Warning("PP_FinishChip [%d][%s]", ret, output);
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
@@ -268,26 +565,26 @@ mrb_pinpad_s_remove_card(mrb_state *mrb, mrb_value klass)
 mrb_emv_s_timestamp(mrb_state *mrb, mrb_value klass)
 {
   mrb_int ret;
-  OUTPUT out[11];
+  OUTPUT output[11]={0x00};
   mrb_value acquirer, array;
   mrb_get_args(mrb, "S", &acquirer);
 
-  ret = PP_GetTimeStamp(RSTRING_PTR(acquirer), out);
+  ret = PP_GetTimeStamp(RSTRING_PTR(acquirer), output);
 
   array = mrb_ary_new(mrb);
   mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
 
-  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new(mrb, out, 10));
+  if (ret == PPCOMP_OK) mrb_ary_push(mrb, array, mrb_str_new(mrb, output, 10));
 
   return array;
 }
 
   void
-mrb_emv_init(mrb_state* mrb)
+mrb_bc_emv_init(mrb_state* mrb)
 {
   struct RClass *plt, *emv;
 
-  plt = mrb_class_get(mrb, "Platform");
+  plt = mrb_define_class(mrb, "EMVPlatform", mrb->object_class);
   emv = mrb_define_class_under(mrb, plt, "EMV",  mrb->object_class);
 
   /*Control*/

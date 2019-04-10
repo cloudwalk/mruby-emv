@@ -1,4 +1,4 @@
-class Platform
+class EMVPlatform
   class EMV
     class Pinpad
       class << self
@@ -13,7 +13,7 @@ class Platform
         "PINBLOCK"    => ""
       }
 
-      #TODO Platform custom
+      #TODO EMVPlatform custom
       GEDI_KMS_KEYTYPE_DES        = 0
       GEDI_KMS_KEYTYPE_TDES       = 1
       GEDI_KMS_KEYTYPE_DUKPT_DES  = 2
@@ -112,7 +112,12 @@ class Platform
         when "3"
           slot = msg[1..2].to_i
           message = msg[35..-1]
-          Device::Crypto.dukpt_encrypt_buffer(slot, [message].pack("H*"))
+
+          if Device::System.brand == "pax"
+            PAX::Pinpad.encrypt_buffer(msg)
+          else
+            Device::Crypto.dukpt_encrypt_buffer(slot, [message].pack("H*"))
+          end
         else
           self._encrypt_buffer(msg)
         end
