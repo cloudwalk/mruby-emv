@@ -125,9 +125,38 @@ class EMVPlatform::EMV
     end
   end
 
+  def self.emv_application_name_image_ready?(list = nil)
+    (list.nil? || list.size == 2) && DaFunk::ParamsDat.file["emv_application_name_image"] == "1" &&
+      FunkyEmv::Ui.bmp_exists?(:emv_selection_credit_debit) &&
+      FunkyEmv::Ui.bmp_exists?(:emv_selected_credit) &&
+      FunkyEmv::Ui.bmp_exists?(:emv_selected_debit)
+  end
+
+  def self.app_image_selection(list)
+    list.each_with_index.inject({}) do |hash, app|
+      index = app[1]
+      name  = app[0].to_s.downcase
+      if name.include?("debito") || name.include?("maestro") || name.include?("electron") || name.include?("debit")
+        hash[1] = index
+      elsif name.include?("credito") || name.include?("credit")
+        hash[0] = index
+      end
+      hash
+    end
+  end
+
   def self.internal_menu_show(opts, bc_title = nil)
-    selection = opts.split("\r").each_with_index.inject({}) do |hash, app|
-      hash[app[0]] = app[1]; hash
+    list = opts.split("\r")
+    if emv_application_name_image_ready?(list)
+      selected = menu_image(FunkyEmv::Ui.bmp(:emv_selection_credit_debit), app_image_selection(list),
+                 timeout: (EmvTransaction.timeout * 1000))
+    else
+      selection = list.each_with_index.inject({}) do |hash, app|
+        hash[app[0]] = app[1]; hash
+      end
+      mili = EmvTransaction.timeout * 1000
+      selected = menu(@title || bc_title || I18n.t(:emv_select_application),
+                      selection, timeout: mili, number: true)
     end
     selected ? selected+1 : -1
   end
