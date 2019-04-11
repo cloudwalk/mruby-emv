@@ -124,21 +124,29 @@ class EMVPlatform
       end
 
       def self.key_kcv(index)
-        pin  = self._key_kcv(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_PIN  , index)
-        data = self._key_kcv(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_DATA , index)
-        {
-          :pin  => convert_result_to_hex(pin),
-          :data => convert_result_to_hex(data)
-        }
+        if Device::System.brand == "pax"
+          PAX::Pinpad.key_kcv(index)
+        else
+          pin  = self._key_kcv(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_PIN  , index)
+          data = self._key_kcv(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_DATA , index)
+          {
+            :pin  => convert_result_to_hex(pin),
+            :data => convert_result_to_hex(data)
+          }
+        end
       end
 
       def self.key_ksn(index)
-        pin  = self._key_ksn(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_PIN  , index)
-        data = self._key_ksn(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_DATA , index)
-        {
-          :pin  => convert_result_to_hex(pin),
-          :data => convert_result_to_hex(data)
-        }
+        if Device::System.brand == "pax"
+          PAX::Pinpad.key_ksn(index)
+        else
+          pin  = self._key_ksn(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_PIN  , index)
+          data = self._key_ksn(GEDI_KMS_KEYTYPE_DUKPT_TDES , GEDI_KMS_KEYPURPOSE_DATA , index)
+          {
+            :pin  => convert_result_to_hex(pin),
+            :data => convert_result_to_hex(data)
+          }
+        end
       end
 
       private
