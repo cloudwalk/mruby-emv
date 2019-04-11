@@ -136,9 +136,9 @@ class EMVPlatform::EMV
     list.each_with_index.inject({}) do |hash, app|
       index = app[1]
       name  = app[0].to_s.downcase
-      if name.include?("debito") || name.include?("maestro") || name.include?("electron") || name.include?("debit")
+      if debit_message?(name)
         hash[1] = index
-      elsif name.include?("credito") || name.include?("credit")
+      elsif credit_message?(name)
         hash[0] = index
       end
       hash
@@ -172,14 +172,23 @@ class EMVPlatform::EMV
     0
   end
 
+  def self.credit_message?(text)
+    text.include?("credit")
+  end
+
+  def self.debit_message?(text)
+    text.include?("debit") || text.include?("maestro") || text.include?("electron")
+  end
+
   def self.pax_display(text1)
     text = text1.to_s.downcase
+    allow_selection_image = emv_application_name_image_ready?
     if text.include?("atualizando") && text.include?("tabelas")
     elsif text.include? "processando"
       FunkyEmv::Ui.display(:emv_processing, :line => 2, :column => 1)
-    elsif text.include?("selecionado") && (text.include?("debito") || text.include?("maestro") || text.include?("electron") || text.include?("debit"))
+    elsif allow_selection_image && text.include?("selecionado") && debit_message?(text)
       FunkyEmv::Ui.display(:emv_selected_debit)
-    elsif text.include?("selecionado") && (text.include?("credito") || text.include?("credit"))
+    elsif allow_selection_image && text.include?("selecionado") && credit_message?(text)
       FunkyEmv::Ui.display(:emv_selected_credit)
     elsif text.include? "retire"
       FunkyEmv::Ui.display(:emv_remove_card, :line => 2)
