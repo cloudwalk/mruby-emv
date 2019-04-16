@@ -162,6 +162,7 @@ class EMVPlatform::EMV
   end
 
   def self.internal_get_pin(msg, inum)
+    getc(200)
     amount = msg.split("\n").reject(&:empty?)[0].to_s
     amount["VALOR:"] = "" if amount.include?("VALOR:")
     if inum > 0
@@ -169,6 +170,7 @@ class EMVPlatform::EMV
     else
       FunkyEmv::Ui.display(:emv_enter_pin, :args => [amount.strip], :column => 1, :line => 1)
     end
+    getc(200)
     0
   end
 
