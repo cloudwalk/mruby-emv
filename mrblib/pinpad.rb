@@ -107,6 +107,14 @@ class EMVPlatform
         response
       end
 
+      def self.encrypt(*params)
+        if Device.adapter && Device.adapter.const_defined?(:Pinpad)
+          if Device.adapter::Pinpad.respond_to?(:encrypt)
+            Device.adapter::Pinpad.encrypt(*params)
+          end
+        end
+      end
+
       def self.encrypt_buffer(msg)
         case msg.to_s[0]
         when "3"
