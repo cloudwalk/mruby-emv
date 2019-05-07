@@ -114,7 +114,7 @@ class EMVPlatform
           message = msg[35..-1]
 
           if Device::System.brand == "pax"
-            PAX::Pinpad.encrypt_buffer(msg)
+            Device.adapter::Pinpad.encrypt_buffer(msg)
           else
             Device::Crypto.dukpt_encrypt_buffer(slot, [message].pack("H*"))
           end
