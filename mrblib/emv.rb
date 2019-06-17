@@ -194,6 +194,8 @@ class EMVPlatform::EMV
       FunkyEmv::Ui.display(:emv_selected_credit)
     elsif text.include? "retire"
       FunkyEmv::Ui.display(:emv_remove_card, :line => 2)
+    elsif allow_selection_image && (text.include?("aproxime") || text.include?("insira") || text.include?("passe"))
+      FunkyEmv::Ui.display(:cwinsertswipecard, :line => 2)
     else
       unless text1.to_s.strip.empty?
         Device::Display.clear
