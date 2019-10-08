@@ -152,13 +152,13 @@ class EMVPlatform::EMV
                  timeout: (EmvTransaction.timeout * 1000))
     else
       selection = list.each_with_index.inject({}) do |hash, app|
-        hash[app[0]] = app[1]; hash
+        hash["#{app[1].to_i + 1}.#{app[0]}"] = app[1].to_i + 1; hash
       end
       mili = EmvTransaction.timeout * 1000
       selected = menu(@title || bc_title || I18n.t(:emv_select_application),
-                      selection, timeout: mili, number: true)
+                      selection, timeout: mili, number: false)
     end
-    selected ? selected+1 : -1
+    selected ? selected : -1
   end
 
   def self.internal_get_pin(msg, inum)
