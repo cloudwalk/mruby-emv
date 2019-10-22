@@ -150,6 +150,7 @@ class EMVPlatform::EMV
     if emv_application_name_image_ready?(list)
       selected = menu_image(FunkyEmv::Ui.bmp(:emv_selection_credit_debit), app_image_selection(list),
                  timeout: (EmvTransaction.timeout * 1000))
+      ret = selected ? selected+1 : -1
     else
       selection = list.each_with_index.inject({}) do |hash, app|
         hash["#{app[1].to_i + 1}.#{app[0]}"] = app[1].to_i + 1; hash
@@ -157,8 +158,9 @@ class EMVPlatform::EMV
       mili = EmvTransaction.timeout * 1000
       selected = menu(@title || bc_title || I18n.t(:emv_select_application),
                       selection, timeout: mili, number: false)
+      ret = selected ? selected : -1
     end
-    selected ? selected : -1
+    ret
   end
 
   def self.internal_get_pin(msg, inum)
