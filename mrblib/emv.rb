@@ -137,9 +137,17 @@ class EMVPlatform::EMV
       index = app[1]
       name  = app[0].to_s.downcase
       if debit_message?(name)
-        hash[1] = index
+        if touchscreen_supported?
+          hash[index] = {:x => 20..225, :y => 200..320}
+        else
+          hash[1] = index
+        end
       elsif credit_message?(name)
-        hash[0] = index
+        if touchscreen_supported?
+          hash[index] = {:x => 20..225, :y => 90..190}
+        else
+          hash[0] = index
+        end
       end
       hash
     end
@@ -148,8 +156,13 @@ class EMVPlatform::EMV
   def self.internal_menu_show(opts, bc_title = nil)
     list = opts.split("\r")
     if emv_application_name_image_ready?(list)
-      selected = menu_image(FunkyEmv::Ui.bmp(:emv_selection_credit_debit), app_image_selection(list),
-                 timeout: (EmvTransaction.timeout * 1000))
+      if touchscreen_supported?
+        selected = menu_image_touchscreen_or_keyboard(FunkyEmv::Ui.bmp(:emv_selection_credit_debit),
+                  app_image_selection(list), timeout: (EmvTransaction.timeout * 1000))
+      else
+        selected = menu_image(FunkyEmv::Ui.bmp(:emv_selection_credit_debit), app_image_selection(list),
+                   timeout: (EmvTransaction.timeout * 1000))
+      end
       ret = selected ? selected+1 : -1
     else
       selection = list.each_with_index.inject({}) do |hash, app|
@@ -160,6 +173,7 @@ class EMVPlatform::EMV
                       selection, timeout: mili, number: false)
       ret = selected ? selected : -1
     end
+
     ret
   end
 
@@ -232,6 +246,12 @@ class EMVPlatform::EMV
         puts(*text2.split("\r")) if text2
       end
     end
+  end
+
+  def self.touchscreen_supported?
+    MODELS_WITH_TOUCHSCREEN = ['s920']
+
+    MODELS_WITH_TOUCHSCREEN.include?(Device::System.model)
   end
 end
 
