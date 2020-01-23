@@ -139,6 +139,7 @@ class EMVPlatform::EMV
       if debit_message?(name)
         if touchscreen_supported?
           hash[index] = {:x => 20..225, :y => 200..320}
+          hash[index][:debit_first] = true if list[0].to_s.downcase == name
         else
           hash[1] = index
         end
@@ -157,8 +158,14 @@ class EMVPlatform::EMV
     list = opts.split("\r")
     if emv_application_name_image_ready?(list)
       if touchscreen_supported?
-        selected = menu_image_touchscreen_or_keyboard(FunkyEmv::Ui.bmp(:emv_selection_credit_debit),
-                  app_image_selection(list), timeout: (EmvTransaction.timeout * 1000))
+        options = app_image_selection(list)
+
+        Device::Display.print_bitmap(FunkyEmv::Ui.bmp(:emv_selection_credit_debit))
+
+        event = wait_touchscreen_or_keyboard_event(options,
+                EmvTransaction.timeout * 1000, special_keys: [Device::IO::CANCEL])
+
+        selected = parse_application_selected(event, options)
       else
         selected = menu_image(FunkyEmv::Ui.bmp(:emv_selection_credit_debit), app_image_selection(list),
                    timeout: (EmvTransaction.timeout * 1000))
@@ -252,6 +259,27 @@ class EMVPlatform::EMV
     MODELS_WITH_TOUCHSCREEN = ['s920']
 
     MODELS_WITH_TOUCHSCREEN.include?(Device::System.model)
+  end
+
+  def self.parse_application_selected(event, options)
+    return nil if event[0] == :timeout
+
+    key   = event[1]
+    event = event[0]
+
+    if event == :keyboard
+      return nil if key == Device::IO::CANCEL
+
+      if options[0].include?(:debit_first)
+        return 1 if key == Device::IO::ONE_NUMBER # credit selected
+        return 0 # debit selected
+      end
+
+      index = key.to_i-1 == -1 ? 0 : key.to_i-1
+      options.keys[index]
+    else
+      options.select {|k, v| k == key}.shift[0]
+    end
   end
 end
 
