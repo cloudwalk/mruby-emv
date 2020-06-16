@@ -448,7 +448,7 @@ mrb_emv_s_get_card(mrb_state *mrb, mrb_value klass)
 
   //OSL_Warning("mrb_emv_s_get_card");
 
-  //OSL_Warning("mrb_emv_s_start_get_card: PP_GetCard [%s][%s]", output, msg);
+  //OSL_Warning("mrb_emv_s_get_card: PP_GetCard [%s][%s]", output, msg);
   ret = PP_GetCard(output, msg);
 #ifdef __FRAMEWORK_TELIUM_PLUS__
   Telium_Ttestall(0, 50);
@@ -579,6 +579,35 @@ mrb_emv_s_timestamp(mrb_state *mrb, mrb_value klass)
   return array;
 }
 
+  static mrb_value
+mrb_emv_s_start_check_event(mrb_state *mrb, mrb_value klass)
+{
+  mrb_value value;
+  mrb_int ret;
+
+  mrb_get_args(mrb, "S", &value);
+
+  ret = PP_StartCheckEvent(RSTRING_PTR(value));
+  #ifdef __FRAMEWORK_TELIUM_PLUS__
+  Telium_Ttestall(0, 50);
+  #endif
+  return mrb_fixnum_value(ret);
+}
+
+  static mrb_value
+mrb_emv_s_check_event(mrb_state *mrb, mrb_value klass)
+{
+  OUTPUT output[1024]={0x00};
+  mrb_value array;
+  mrb_int ret;
+
+  ret = PP_CheckEvent(output);
+  #ifdef __FRAMEWORK_TELIUM_PLUS__
+  Telium_Ttestall(0, 50);
+  #endif
+  return mrb_fixnum_value(ret);
+}
+
   void
 mrb_bc_emv_init(mrb_state* mrb)
 {
@@ -601,6 +630,8 @@ mrb_bc_emv_init(mrb_state* mrb)
   mrb_define_class_method(mrb , emv , "start_remove_card" , mrb_pinpad_s_start_remove_card , MRB_ARGS_REQ(1));
   mrb_define_class_method(mrb , emv , "remove_card"       , mrb_pinpad_s_remove_card       , MRB_ARGS_NONE());
   mrb_define_class_method(mrb , emv , "timestamp"         , mrb_emv_s_timestamp            , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "start_check_event" , mrb_emv_s_start_check_event    , MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb , emv , "check_event"       , mrb_emv_s_check_event          , MRB_ARGS_NONE());
 
   /*
    *Debugs
