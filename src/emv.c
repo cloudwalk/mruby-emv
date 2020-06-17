@@ -605,7 +605,12 @@ mrb_emv_s_check_event(mrb_state *mrb, mrb_value klass)
   #ifdef __FRAMEWORK_TELIUM_PLUS__
   Telium_Ttestall(0, 50);
   #endif
-  return mrb_fixnum_value(ret);
+
+  array = mrb_ary_new(mrb);
+  mrb_ary_push(mrb, array, mrb_fixnum_value(ret));
+  mrb_ary_push(mrb, array, mrb_str_new_cstr(mrb, output));
+
+  return array;
 }
 
   void
