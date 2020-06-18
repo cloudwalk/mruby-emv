@@ -178,7 +178,11 @@ class EMVPlatform::EMV
       mili = EmvTransaction.timeout * 1000
       selected = menu(@title || bc_title || I18n.t(:emv_select_application),
                       selection, timeout: mili, number: false)
-      ret = selected ? selected : -1
+      if selected == Device::IO::KEY_TIMEOUT
+        ret = -1
+      else
+        ret = selected
+      end
     end
 
     ret
