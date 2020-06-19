@@ -99,7 +99,7 @@ class EMVPlatform::EMV
 
   class << self
     attr_reader :version, :menu_title_block, :menu_show_block, :text_show_block
-    attr_accessor :fiber, :use_fiber
+    attr_accessor :fiber, :use_fiber, :application_selection_timeout
   end
 
   def self.version
@@ -266,13 +266,16 @@ class EMVPlatform::EMV
   end
 
   def self.parse_application_selected(event, options)
-    return nil if event[0] == :timeout
-
     key   = event[1]
     event = event[0]
 
+    if event == :timeout
+      self.application_selection_timeout = true
+      return
+    end
+
     if event == :keyboard
-      return nil if key == Device::IO::CANCEL
+      return if key == Device::IO::CANCEL
 
       if options[0].include?(:debit_first)
         return 1 if key == Device::IO::ONE_NUMBER # credit selected
