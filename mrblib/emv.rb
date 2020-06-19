@@ -262,13 +262,11 @@ class EMVPlatform::EMV
   end
 
   def self.parse_application_selected(event, options)
-    return nil if event[0] == :timeout
-
     key   = event[1]
     event = event[0]
 
     if event == :keyboard
-      return nil if key == Device::IO::CANCEL
+      return if key == Device::IO::CANCEL
 
       if options[0].include?(:debit_first)
         return 1 if key == Device::IO::ONE_NUMBER # credit selected
