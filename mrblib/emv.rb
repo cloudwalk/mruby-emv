@@ -99,7 +99,7 @@ class EMVPlatform::EMV
 
   class << self
     attr_reader :version, :menu_title_block, :menu_show_block, :text_show_block
-    attr_accessor :fiber, :use_fiber
+    attr_accessor :fiber, :use_fiber, :application_selection_timeout
   end
 
   def self.version
@@ -264,6 +264,11 @@ class EMVPlatform::EMV
   def self.parse_application_selected(event, options)
     key   = event[1]
     event = event[0]
+
+    if event == :timeout
+      self.application_selection_timeout = true
+      return
+    end
 
     if event == :keyboard
       return if key == Device::IO::CANCEL
