@@ -99,7 +99,7 @@ class EMVPlatform::EMV
 
   class << self
     attr_reader :version, :menu_title_block, :menu_show_block, :text_show_block
-    attr_accessor :fiber, :use_fiber, :application_selection_timeout
+    attr_accessor :fiber, :use_fiber
   end
 
   def self.version
@@ -270,7 +270,7 @@ class EMVPlatform::EMV
     event = event[0]
 
     if event == :timeout
-      self.application_selection_timeout = true
+      EmvTransaction.init_info[:result] = PPCOMP_TIMEOUT
       return
     end
 
