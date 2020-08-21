@@ -202,7 +202,7 @@ class EMVPlatform::EMV
   end
 
   def self.credit_message?(text)
-    text.include?("credit")
+    text.include?("credit") || text.include?("mastercard")
   end
 
   def self.debit_message?(text)
